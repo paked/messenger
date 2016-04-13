@@ -32,6 +32,7 @@ func main() {
 	m.HandleMessage(func(m messenger.Message, r *messenger.Response) {
 		fmt.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
 		fmt.Println(r.Text("Hello, World!"))
+		fmt.Println(m.Attachments)
 	})
 
 	m.HandleDelivery(func(d messenger.Delivery, r *messenger.Response) {

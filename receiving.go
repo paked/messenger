@@ -26,3 +26,12 @@ type Sender struct {
 type Recipient struct {
 	ID int64 `json:"id"`
 }
+
+type Attachment struct {
+	Type    string  `json:"type"`
+	Payload Payload `json:"payload"`
+}
+
+type Payload struct {
+	URL string `json:"url"`
+}

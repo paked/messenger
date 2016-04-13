@@ -3,12 +3,13 @@ package messenger
 import "time"
 
 type Message struct {
-	Sender    Sender    `json:"-"`
-	Recipient Recipient `json:"-"`
-	Time      time.Time `json:"-"`
-	Mid       string    `json:"mid"`
-	Text      string    `json:"text"`
-	Seq       int       `json:"seq"`
+	Sender      Sender       `json:"-"`
+	Recipient   Recipient    `json:"-"`
+	Time        time.Time    `json:"-"`
+	Mid         string       `json:"mid"`
+	Text        string       `json:"text"`
+	Seq         int          `json:"seq"`
+	Attachments []Attachment `json:"attachments"`
 }
 
 type Delivery struct {
