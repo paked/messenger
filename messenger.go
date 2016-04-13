@@ -14,19 +14,22 @@ const (
 type MessengerOptions struct {
 	Verify      bool
 	VerifyToken string
+	Token       string
 }
 
-type MessageHandler func(Message)
+type MessageHandler func(Message, *Response)
 
 type Messenger struct {
 	mux      *http.ServeMux
 	handlers map[Action]MessageHandler
+	token    string
 }
 
 func New(mo MessengerOptions) *Messenger {
 	m := &Messenger{
 		mux:      http.NewServeMux(),
 		handlers: make(map[Action]MessageHandler),
+		token:    mo.Token,
 	}
 
 	if mo.Verify {
@@ -76,12 +79,19 @@ func (m *Messenger) dispatch(r Receive) {
 			}
 
 			if f := m.handlers[a]; f != nil {
-				f(Message{
+				message := Message{
 					Sender:    info.Sender.ID,
 					Recipient: info.Recipient.ID,
 					Time:      time.Unix(info.Timestamp, 0),
 					Text:      info.Message.Text,
-				})
+				}
+
+				response := &Response{
+					to:    Recipient{info.Sender.ID},
+					token: m.token,
+				}
+
+				f(message, response)
 			}
 		}
 	}
