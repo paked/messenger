@@ -80,10 +80,20 @@ func (m *Messenger) dispatch(r Receive) {
 
 			if f := m.handlers[a]; f != nil {
 				message := Message{
-					Sender:    info.Sender.ID,
-					Recipient: info.Recipient.ID,
+					Sender:    info.Sender,
+					Recipient: info.Recipient,
 					Time:      time.Unix(info.Timestamp, 0),
-					Text:      info.Message.Text,
+				}
+
+				switch a {
+				case TextAction:
+					message.Text = info.Message.Text
+				case DeliveryAction:
+					message.Delivery = &Delivery{
+						Mids:      info.Delivery.Mids,
+						Seq:       info.Delivery.Seq,
+						Watermark: time.Unix(info.Delivery.Watermark, 0),
+					}
 				}
 
 				response := &Response{
@@ -100,6 +110,8 @@ func (m *Messenger) dispatch(r Receive) {
 func (m *Messenger) classify(info MessageInfo, e Entry) Action {
 	if info.Message != nil {
 		return TextAction
+	} else if info.Delivery != nil {
+		return DeliveryAction
 	}
 
 	return UnknownAction
