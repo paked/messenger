@@ -18,18 +18,19 @@ type MessengerOptions struct {
 }
 
 type MessageHandler func(Message, *Response)
+type DeliveryHandler func(Delivery, *Response)
 
 type Messenger struct {
-	mux      *http.ServeMux
-	handlers map[Action]MessageHandler
-	token    string
+	mux              *http.ServeMux
+	messageHandlers  []MessageHandler
+	deliveryHandlers []DeliveryHandler
+	token            string
 }
 
 func New(mo MessengerOptions) *Messenger {
 	m := &Messenger{
-		mux:      http.NewServeMux(),
-		handlers: make(map[Action]MessageHandler),
-		token:    mo.Token,
+		mux:   http.NewServeMux(),
+		token: mo.Token,
 	}
 
 	if mo.Verify {
@@ -41,8 +42,12 @@ func New(mo MessengerOptions) *Messenger {
 	return m
 }
 
-func (m *Messenger) Handle(a Action, f MessageHandler) {
-	m.handlers[a] = f
+func (m *Messenger) HandleMessage(f MessageHandler) {
+	m.messageHandlers = append(m.messageHandlers, f)
+}
+
+func (m *Messenger) HandleDelivery(f DeliveryHandler) {
+	m.deliveryHandlers = append(m.deliveryHandlers, f)
 }
 
 func (m *Messenger) Handler() http.Handler {
@@ -78,30 +83,29 @@ func (m *Messenger) dispatch(r Receive) {
 				continue
 			}
 
-			if f := m.handlers[a]; f != nil {
-				message := Message{
-					Sender:    info.Sender,
-					Recipient: info.Recipient,
-					Time:      time.Unix(info.Timestamp, 0),
-				}
+			resp := &Response{
+				to:    Recipient{info.Sender.ID},
+				token: m.token,
+			}
 
-				switch a {
-				case TextAction:
-					message.Text = info.Message.Text
-				case DeliveryAction:
-					message.Delivery = &Delivery{
+			switch a {
+			case TextAction:
+				for _, f := range m.messageHandlers {
+					f(Message{
+						Sender:    info.Sender,
+						Recipient: info.Recipient,
+						Time:      time.Unix(info.Timestamp, 0),
+						Text:      info.Message.Text,
+					}, resp)
+				}
+			case DeliveryAction:
+				for _, f := range m.deliveryHandlers {
+					f(Delivery{
 						Mids:      info.Delivery.Mids,
 						Seq:       info.Delivery.Seq,
 						Watermark: time.Unix(info.Delivery.Watermark, 0),
-					}
+					}, resp)
 				}
-
-				response := &Response{
-					to:    Recipient{info.Sender.ID},
-					token: m.token,
-				}
-
-				f(message, response)
 			}
 		}
 	}

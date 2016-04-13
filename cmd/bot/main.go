@@ -29,13 +29,13 @@ func main() {
 		Token:       *pageToken,
 	})
 
-	m.Handle(messenger.TextAction, func(m messenger.Message, r *messenger.Response) {
+	m.HandleMessage(func(m messenger.Message, r *messenger.Response) {
 		fmt.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
 		fmt.Println(r.Text("Hello, World!"))
 	})
 
-	m.Handle(messenger.DeliveryAction, func(m messenger.Message, r *messenger.Response) {
-		fmt.Println(m.Delivery.Watermark.Format(time.UnixDate))
+	m.HandleDelivery(func(d messenger.Delivery, r *messenger.Response) {
+		fmt.Println(d.Watermark.Format(time.UnixDate))
 	})
 
 	fmt.Println("Serving messenger bot on localhost:8080")

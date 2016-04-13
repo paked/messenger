@@ -8,7 +8,6 @@ type Message struct {
 	Time      time.Time
 	Text      string
 	Seq       int
-	Delivery  *Delivery
 }
 
 type Delivery struct {
