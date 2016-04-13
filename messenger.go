@@ -8,18 +8,29 @@ import (
 )
 
 const (
+	// WebhookURL is where the Messenger client should listen for webhook events.
 	WebhookURL = "/webhook"
 )
 
+// MessengerOptions are the settings used when creating a Messenger client.
 type MessengerOptions struct {
-	Verify      bool
+	// Verify sets whether or not to be in the "verify" mode. Used for
+	// verifying webhooks on the Facebook Developer Portal.
+	Verify bool
+	// VerifyToken is the token to be used when verifying the webhook. Is set
+	// when the webhook is created.
 	VerifyToken string
-	Token       string
+	// Token is the access token of the Facebook page to send messages from.
+	Token string
 }
 
+// MessageHandler is a handler used for responding to a message containing text.
 type MessageHandler func(Message, *Response)
+
+// DeliveryHandler is a handler used for responding to a read receipt.
 type DeliveryHandler func(Delivery, *Response)
 
+// Messenger is the client which manages communication with the Messenger Platform API.
 type Messenger struct {
 	mux              *http.ServeMux
 	messageHandlers  []MessageHandler
@@ -27,6 +38,7 @@ type Messenger struct {
 	token            string
 }
 
+// New creates a new Messenger. You pass in MessengerOptions in order to affect settings.
 func New(mo MessengerOptions) *Messenger {
 	m := &Messenger{
 		mux:   http.NewServeMux(),
@@ -42,18 +54,24 @@ func New(mo MessengerOptions) *Messenger {
 	return m
 }
 
+// HandleMessage adds a new MessageHandler to the Messenger which will be triggered
+// when a message is recieved by the client.
 func (m *Messenger) HandleMessage(f MessageHandler) {
 	m.messageHandlers = append(m.messageHandlers, f)
 }
 
+// HandleDelivery adds a new DeliveryHandler to the Messenger which will be triggered
+// when a previously sent message is read by the recipient.
 func (m *Messenger) HandleDelivery(f DeliveryHandler) {
 	m.deliveryHandlers = append(m.deliveryHandlers, f)
 }
 
+// Handler returns the Messenger in HTTP client form.
 func (m *Messenger) Handler() http.Handler {
 	return m.mux
 }
 
+// handle is the internal HTTP handler for the webhooks.
 func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 	var rec Receive
 
@@ -74,6 +92,7 @@ func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, `{status: 'ok'}`)
 }
 
+// dispatch triggers all of the relevant handlers when a webhook event is received.
 func (m *Messenger) dispatch(r Receive) {
 	for _, entry := range r.Entry {
 		for _, info := range entry.Messaging {
@@ -107,6 +126,7 @@ func (m *Messenger) dispatch(r Receive) {
 	}
 }
 
+// classify determines what type of message a webhook event is.
 func (m *Messenger) classify(info MessageInfo, e Entry) Action {
 	if info.Message != nil {
 		return TextAction
@@ -117,6 +137,7 @@ func (m *Messenger) classify(info MessageInfo, e Entry) Action {
 	return UnknownAction
 }
 
+// newVerifyHandler returns a function which can be used to handle webhook verification
 func newVerifyHandler(token string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.FormValue("hub.verify_token") == token {
