@@ -3,15 +3,20 @@ package messenger
 import "time"
 
 type Message struct {
-	Sender    Sender
-	Recipient Recipient
-	Time      time.Time
-	Text      string
-	Seq       int
+	Sender    Sender    `json:"-"`
+	Recipient Recipient `json:"-"`
+	Time      time.Time `json:"-"`
+	Mid       string    `json:"mid"`
+	Text      string    `json:"text"`
+	Seq       int       `json:"seq"`
 }
 
 type Delivery struct {
-	Mids      []string
-	Watermark time.Time
-	Seq       int
+	Mids         []string `json:"mids"`
+	RawWatermark int64    `json:"watermark"`
+	Seq          int      `json:"seq"`
+}
+
+func (d Delivery) Watermark() time.Time {
+	return time.Unix(d.RawWatermark, 0)
 }

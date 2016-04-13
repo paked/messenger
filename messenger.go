@@ -91,20 +91,16 @@ func (m *Messenger) dispatch(r Receive) {
 			switch a {
 			case TextAction:
 				for _, f := range m.messageHandlers {
-					f(Message{
-						Sender:    info.Sender,
-						Recipient: info.Recipient,
-						Time:      time.Unix(info.Timestamp, 0),
-						Text:      info.Message.Text,
-					}, resp)
+					message := *info.Message
+					message.Sender = info.Sender
+					message.Recipient = info.Recipient
+					message.Time = time.Unix(info.Timestamp, 0)
+
+					f(message, resp)
 				}
 			case DeliveryAction:
 				for _, f := range m.deliveryHandlers {
-					f(Delivery{
-						Mids:      info.Delivery.Mids,
-						Seq:       info.Delivery.Seq,
-						Watermark: time.Unix(info.Delivery.Watermark, 0),
-					}, resp)
+					f(*info.Delivery, resp)
 				}
 			}
 		}

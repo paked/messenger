@@ -35,7 +35,7 @@ func main() {
 	})
 
 	m.HandleDelivery(func(d messenger.Delivery, r *messenger.Response) {
-		fmt.Println(d.Watermark.Format(time.UnixDate))
+		fmt.Println(d.Watermark().Format(time.UnixDate))
 	})
 
 	fmt.Println("Serving messenger bot on localhost:8080")

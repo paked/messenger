@@ -12,11 +12,11 @@ type Entry struct {
 }
 
 type MessageInfo struct {
-	Sender    Sender            `json:"sender"`
-	Recipient Recipient         `json:"recipient"`
-	Timestamp int64             `json:"timestamp"`
-	Message   *MessageCallback  `json:"message"`
-	Delivery  *DeliveryCallback `json:"delivery"`
+	Sender    Sender    `json:"sender"`
+	Recipient Recipient `json:"recipient"`
+	Timestamp int64     `json:"timestamp"`
+	Message   *Message  `json:"message"`
+	Delivery  *Delivery `json:"delivery"`
 }
 
 type Sender struct {
@@ -25,16 +25,4 @@ type Sender struct {
 
 type Recipient struct {
 	ID int64 `json:"id"`
-}
-
-type MessageCallback struct {
-	Mid  string `json:"mid"`
-	Seq  int    `json:"seq"`
-	Text string `json:"text"`
-}
-
-type DeliveryCallback struct {
-	Mids      []string `json:"mids"`
-	Watermark int64    `json:"watermark"`
-	Seq       int      `json:"seq"`
 }
