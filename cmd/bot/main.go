@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/paked/configure"
 	"github.com/paked/messenger"
@@ -26,6 +27,11 @@ func main() {
 		VerifyToken: *verifyToken,
 	})
 
+	m.Handle(messenger.TextAction, func(m messenger.Message) {
+		fmt.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
+	})
+
 	fmt.Println("Serving messenger bot on localhost:8080")
+
 	http.ListenAndServe("localhost:8080", m.Handler())
 }
