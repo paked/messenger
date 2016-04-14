@@ -7,14 +7,17 @@ import (
 )
 
 const (
+	// SendMessageURL is API endpoint for sending messages.
 	SendMessageURL = "https://graph.facebook.com/v2.6/me/messages"
 )
 
+// Response is used for responding to events with messages.
 type Response struct {
 	token string
 	to    Recipient
 }
 
+// Text sends a textual message.
 func (r *Response) Text(message string) error {
 	m := SendMessage{
 		Recipient: r.to,
@@ -44,11 +47,13 @@ func (r *Response) Text(message string) error {
 	return err
 }
 
+// SendMessage is the information sent in an API request to Facebook.
 type SendMessage struct {
 	Recipient Recipient   `json:"recipient"`
 	Message   MessageData `json:"message"`
 }
 
+// MessageData is a text message to be sent.
 type MessageData struct {
 	Text string `json:"text,omitempty"`
 }
