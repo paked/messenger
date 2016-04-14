@@ -1,37 +1,60 @@
 package messenger
 
+// Receive is the format in which webhook events are sent.
 type Receive struct {
-	Object string  `json:"object"`
-	Entry  []Entry `json:"entry"`
+	// Object should always be `page`. (I don't quite understand why)
+	Object string `json:"object"`
+	// Entry is all of the different messenger types which were
+	// sent in this event.
+	Entry []Entry `json:"entry"`
 }
 
+// Entry is a batch of events which were sent in this webhook trigger.
 type Entry struct {
-	ID        int64         `json:"id"`
-	Time      int64         `json:"time"`
+	// ID is the ID of the batch.
+	ID int64 `json:"id"`
+	// Time is when the batch was sent.
+	Time int64 `json:"time"`
+	// Messaging is the events that were sent in this Entry
 	Messaging []MessageInfo `json:"messaging"`
 }
 
+// MessageInfo is an event that is fired by the webhook.
 type MessageInfo struct {
-	Sender    Sender    `json:"sender"`
+	// Sender is who the event was sent from.
+	Sender Sender `json:"sender"`
+	// Recipient is who the event was sent to.
 	Recipient Recipient `json:"recipient"`
-	Timestamp int64     `json:"timestamp"`
-	Message   *Message  `json:"message"`
-	Delivery  *Delivery `json:"delivery"`
+	// Timestamp is the true time the event was triggered.
+	Timestamp int64 `json:"timestamp"`
+	// Message is the contents of a message if it is a MessageAction.
+	// Nil if it is not a MessageAction.
+	Message *Message `json:"message"`
+	// Delivery is the contents of a message if it is a DeliveryAction.
+	// Nil if it is not a DeliveryAction.
+	Delivery *Delivery `json:"delivery"`
 }
 
+// Sender is who the message was sent from.
 type Sender struct {
 	ID int64 `json:"id"`
 }
 
+// Recipient is who the message was sent to.
 type Recipient struct {
 	ID int64 `json:"id"`
 }
 
+// Attachment is a file which used in a message.
 type Attachment struct {
-	Type    string  `json:"type"`
+	// Type is what type the message is. (image, video or audio)
+	Type string `json:"type"`
+	// Payload is the information for the file which was sent in the attachment.
 	Payload Payload `json:"payload"`
 }
 
+// Payload is the information on where an attachment is.
 type Payload struct {
+	// URL is where the attachment resides on the internet.
 	URL string `json:"url"`
 }
