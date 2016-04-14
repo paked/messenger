@@ -23,7 +23,7 @@ func main() {
 
 	conf.Parse()
 
-	m := messenger.New(messenger.MessengerOptions{
+	m := messenger.New(messenger.Options{
 		Verify:      *verify,
 		VerifyToken: *verifyToken,
 		Token:       *pageToken,

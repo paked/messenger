@@ -12,8 +12,8 @@ const (
 	WebhookURL = "/webhook"
 )
 
-// MessengerOptions are the settings used when creating a Messenger client.
-type MessengerOptions struct {
+// Options are the settings used when creating a Messenger client.
+type Options struct {
 	// Verify sets whether or not to be in the "verify" mode. Used for
 	// verifying webhooks on the Facebook Developer Portal.
 	Verify bool
@@ -38,8 +38,8 @@ type Messenger struct {
 	token            string
 }
 
-// New creates a new Messenger. You pass in MessengerOptions in order to affect settings.
-func New(mo MessengerOptions) *Messenger {
+// New creates a new Messenger. You pass in Options in order to affect settings.
+func New(mo Options) *Messenger {
 	m := &Messenger{
 		mux:   http.NewServeMux(),
 		token: mo.Token,
