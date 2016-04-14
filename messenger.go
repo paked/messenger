@@ -55,7 +55,7 @@ func New(mo Options) *Messenger {
 }
 
 // HandleMessage adds a new MessageHandler to the Messenger which will be triggered
-// when a message is recieved by the client.
+// when a message is received by the client.
 func (m *Messenger) HandleMessage(f MessageHandler) {
 	m.messageHandlers = append(m.messageHandlers, f)
 }
