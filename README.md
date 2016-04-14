@@ -4,6 +4,11 @@ This is a Go library for making bots to be used on Facebook messenger. It is bui
 
 **It is currently in very early development. [Discussion](https://github.com/paked/messenger/issues/new) is much appreciated!**
 
+## Tips
+
+- You need a Facebook development app, and a Facebook page in order to build things.
+- Use [ngrok](https://ngrok.com) to tunnel your locally runnning bot so that Facebook can reach the webhook.
+
 ## Inspiration
 
 Messenger takes design cues from:
