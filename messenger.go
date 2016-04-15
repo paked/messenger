@@ -10,6 +10,10 @@ import (
 const (
 	// WebhookURL is where the Messenger client should listen for webhook events.
 	WebhookURL = "/webhook"
+
+	// ProfileURL is the API endpoint used for retrieving profiles.
+	// Used in the form: https://graph.facebook.com/v2.6/<USER_ID>?fields=first_name,last_name,profile_pic&access_token=<PAGE_ACCESS_TOKEN>
+	ProfileURL = "https://graph.facebook.com/v2.6/"
 )
 
 // Options are the settings used when creating a Messenger client.
@@ -69,6 +73,27 @@ func (m *Messenger) HandleDelivery(f DeliveryHandler) {
 // Handler returns the Messenger in HTTP client form.
 func (m *Messenger) Handler() http.Handler {
 	return m.mux
+}
+
+// ProfileByID retrieves the Facebook user associated with that ID
+func (m *Messenger) ProfileByID(id int64) (Profile, error) {
+	p := Profile{}
+	url := fmt.Sprintf("%v%v", ProfileURL, id)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return p, err
+	}
+
+	req.URL.RawQuery = "fields=first_name,last_name,profile_pic&access_token=" + m.token
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	defer resp.Body.Close()
+
+	err = json.NewDecoder(resp.Body).Decode(&p)
+
+	return p, err
 }
 
 // handle is the internal HTTP handler for the webhooks.

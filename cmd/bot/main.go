@@ -23,23 +23,28 @@ func main() {
 
 	conf.Parse()
 
-	m := messenger.New(messenger.Options{
+	client := messenger.New(messenger.Options{
 		Verify:      *verify,
 		VerifyToken: *verifyToken,
 		Token:       *pageToken,
 	})
 
-	m.HandleMessage(func(m messenger.Message, r *messenger.Response) {
+	client.HandleMessage(func(m messenger.Message, r *messenger.Response) {
 		fmt.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
-		fmt.Println(r.Text("Hello, World!"))
-		fmt.Println(m.Attachments)
+
+		p, err := client.ProfileByID(m.Sender.ID)
+		if err != nil {
+			fmt.Println("Something went wrong!", err)
+		}
+
+		r.Text(fmt.Sprintf("Hello, %v!", p.FirstName))
 	})
 
-	m.HandleDelivery(func(d messenger.Delivery, r *messenger.Response) {
+	client.HandleDelivery(func(d messenger.Delivery, r *messenger.Response) {
 		fmt.Println(d.Watermark().Format(time.UnixDate))
 	})
 
 	fmt.Println("Serving messenger bot on localhost:8080")
 
-	http.ListenAndServe("localhost:8080", m.Handler())
+	http.ListenAndServe("localhost:8080", client.Handler())
 }
