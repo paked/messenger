@@ -2,6 +2,8 @@
 
 This is a Go library for making bots to be used on Facebook messenger. It is built on the [Messenger Platform](https://developers.facebook.com/docs/messenger-platform). One of the main goals of the project is to implement it in an idiomatic and easy to use fashion.
 
+[You can find an example of how to use it here](https://github.com/paked/messenger/blob/master/cmd/bot/main.go)
+
 ## Tips
 
 - Follow the [quickstart](https://developers.facebook.com/docs/messenger-platform/quickstart) guide for getting everything set up!
