@@ -23,12 +23,14 @@ func main() {
 
 	conf.Parse()
 
+	// Create a new messenger client
 	client := messenger.New(messenger.Options{
 		Verify:      *verify,
 		VerifyToken: *verifyToken,
 		Token:       *pageToken,
 	})
 
+	// Setup a handler to be triggered when a message is received
 	client.HandleMessage(func(m messenger.Message, r *messenger.Response) {
 		fmt.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
 
@@ -40,6 +42,7 @@ func main() {
 		r.Text(fmt.Sprintf("Hello, %v!", p.FirstName))
 	})
 
+	// Setup a handler to be triggered when a message is read
 	client.HandleDelivery(func(d messenger.Delivery, r *messenger.Response) {
 		fmt.Println(d.Watermark().Format(time.UnixDate))
 	})
