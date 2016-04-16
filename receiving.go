@@ -56,5 +56,5 @@ type Attachment struct {
 // Payload is the information on where an attachment is.
 type Payload struct {
 	// URL is where the attachment resides on the internet.
-	URL string `json:"url"`
+	URL string `json:"url,omitempty"`
 }
