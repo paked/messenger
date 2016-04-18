@@ -40,6 +40,7 @@ type Messenger struct {
 	messageHandlers  []MessageHandler
 	deliveryHandlers []DeliveryHandler
 	token            string
+	verifyHandler    func(http.ResponseWriter, *http.Request)
 }
 
 // New creates a new Messenger. You pass in Options in order to affect settings.
@@ -49,11 +50,8 @@ func New(mo Options) *Messenger {
 		token: mo.Token,
 	}
 
-	if mo.Verify {
-		m.mux.HandleFunc(WebhookURL, newVerifyHandler(mo.VerifyToken))
-	} else {
-		m.mux.HandleFunc(WebhookURL, m.handle)
-	}
+	m.verifyHandler = newVerifyHandler(mo.VerifyToken)
+	m.mux.HandleFunc(WebhookURL, m.handle)
 
 	return m
 }
@@ -98,6 +96,11 @@ func (m *Messenger) ProfileByID(id int64) (Profile, error) {
 
 // handle is the internal HTTP handler for the webhooks.
 func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		m.verifyHandler(w, r)
+		return
+	}
+
 	var rec Receive
 
 	err := json.NewDecoder(r.Body).Decode(&rec)
