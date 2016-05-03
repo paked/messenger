@@ -97,6 +97,85 @@ func (r *Response) Image(im image.Image) error {
 	return nil
 }
 
+func (r *Response) ButtonTemplate(text string, buttons *[]StructuredMessageButton) error {
+    m := SendStructuredMessage {
+		Recipient: r.to,
+		Message: StructuredMessageData {
+			Attachment: StructuredMessageAttachment {
+                Type: "template",
+                Payload: StructuredMessagePayload {
+                    TemplateType: "button",
+                    Text: text,
+                    Buttons: buttons,
+                    Elements: nil,
+                },
+            },
+		},
+	}
+
+    fmt.Println(m)
+    
+	data, err := json.Marshal(m)
+	if err != nil {
+		return nil
+	}
+
+	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.URL.RawQuery = "access_token=" + r.token
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+    fmt.Println(resp)
+	defer resp.Body.Close()
+    
+	return err
+}
+
+func (r *Response) GenericTemplate(text string, elements *[]StructuredMessageElement) error {
+    m := SendStructuredMessage {
+		Recipient: r.to,
+		Message: StructuredMessageData {
+			Attachment: StructuredMessageAttachment {
+                Type: "template",
+                Payload: StructuredMessagePayload {
+                    TemplateType: "generic",
+                    Buttons: nil,
+                    Elements: elements,
+                },
+            },
+		},
+	}
+
+    fmt.Println(m)
+    
+	data, err := json.Marshal(m)
+	if err != nil {
+		return nil
+	}
+
+	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.URL.RawQuery = "access_token=" + r.token
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+    fmt.Println(resp)
+	defer resp.Body.Close()
+    
+	return err
+}
+
 // SendMessage is the information sent in an API request to Facebook.
 type SendMessage struct {
 	Recipient Recipient   `json:"recipient"`
@@ -107,3 +186,46 @@ type SendMessage struct {
 type MessageData struct {
 	Text string `json:"text,omitempty"`
 }
+
+// SendStructuredMessage is a structured message template
+type SendStructuredMessage struct {
+	Recipient Recipient   `json:"recipient"`
+	Message   StructuredMessageData `json:"message"`
+}
+
+type StructuredMessageData struct {
+	Attachment StructuredMessageAttachment `json:"attachment"`
+}
+
+type StructuredMessageAttachment struct {
+    // Template allways
+	Type string `json:"type"`
+	// Payload is the information for the file which was sent in the attachment.
+	Payload StructuredMessagePayload `json:"payload"`
+}
+
+type StructuredMessagePayload struct {
+    // button, generic, receipt
+	TemplateType string `json:"template_type"`
+    Text string `json:"text,omitempty"`
+    Elements *[]StructuredMessageElement `json:"elements,omitempty"`
+    Buttons *[]StructuredMessageButton `json:"buttons,omitempty"`
+}
+
+// StructuredMessageElement - Generic Template
+type StructuredMessageElement struct {
+    Title string `json:"title"`
+    ImageURL string `json:"image_url"`
+    Subtitle string `json:"subtitle"`
+    Buttons []StructuredMessageButton `json:"buttons"`
+}
+
+// StructuredMessageButton - Button Template
+type StructuredMessageButton struct {
+    Type string `json:"type"`
+    URL string `json:"url"`
+    Title string `json:"title"`
+}
+
+
+

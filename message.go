@@ -32,6 +32,18 @@ type Delivery struct {
 	Seq int `json:"seq"`
 }
 
+// PostBack represents postback callback
+type PostBack struct {
+    // Sender is who the message was sent from.
+	Sender Sender `json:"-"`
+	// Recipient is who the message was sent to.
+	Recipient Recipient `json:"-"`
+	// Time is when the message was sent.
+	Time time.Time `json:"-"`
+    // PostBack ID
+	Payload string `json:"payload"`
+}
+
 // Watermark is the RawWatermark timestamp rendered as a time.Time.
 func (d Delivery) Watermark() time.Time {
 	return time.Unix(d.RawWatermark, 0)
