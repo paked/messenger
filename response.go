@@ -112,8 +112,6 @@ func (r *Response) ButtonTemplate(text string, buttons *[]StructuredMessageButto
             },
 		},
 	}
-
-    fmt.Println(m)
     
 	data, err := json.Marshal(m)
 	if err != nil {
@@ -131,7 +129,6 @@ func (r *Response) ButtonTemplate(text string, buttons *[]StructuredMessageButto
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
-    fmt.Println(resp)
 	defer resp.Body.Close()
     
 	return err
@@ -151,8 +148,6 @@ func (r *Response) GenericTemplate(text string, elements *[]StructuredMessageEle
             },
 		},
 	}
-
-    fmt.Println(m)
     
 	data, err := json.Marshal(m)
 	if err != nil {
@@ -170,7 +165,6 @@ func (r *Response) GenericTemplate(text string, elements *[]StructuredMessageEle
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
-    fmt.Println(resp)
 	defer resp.Body.Close()
     
 	return err
