@@ -23,7 +23,7 @@ type Options struct {
 	VerifyToken string
 	// Token is the access token of the Facebook page to send messages from.
 	Token string
-    // WebhookURL is where the Messenger client should listen for webhook events.
+	// WebhookURL is where the Messenger client should listen for webhook events.
 	WebhookURL string
 }
 
@@ -41,7 +41,7 @@ type Messenger struct {
 	mux              *http.ServeMux
 	messageHandlers  []MessageHandler
 	deliveryHandlers []DeliveryHandler
-    postBackHandlers []PostBackHandler
+	postBackHandlers []PostBackHandler
 	token            string
 	verifyHandler    func(http.ResponseWriter, *http.Request)
 }
@@ -143,26 +143,26 @@ func (m *Messenger) dispatch(r Receive) {
 			}
 
 			switch a {
-                case TextAction:
-                    for _, f := range m.messageHandlers {
-                        message := *info.Message
-                        message.Sender = info.Sender
-                        message.Recipient = info.Recipient
-                        message.Time = time.Unix(info.Timestamp, 0)
-                        f(message, resp)
-                    }
-                case DeliveryAction:
-                    for _, f := range m.deliveryHandlers {
-                        f(*info.Delivery, resp)
-                    }
-                case PostBackAction:
-                    for _, f := range m.postBackHandlers {
-                        message := *info.PostBack
-                        message.Sender = info.Sender
-                        message.Recipient = info.Recipient
-                        message.Time = time.Unix(info.Timestamp, 0)
-                        f(message, resp)
-                    }
+			case TextAction:
+				for _, f := range m.messageHandlers {
+					message := *info.Message
+					message.Sender = info.Sender
+					message.Recipient = info.Recipient
+					message.Time = time.Unix(info.Timestamp, 0)
+					f(message, resp)
+				}
+			case DeliveryAction:
+				for _, f := range m.deliveryHandlers {
+					f(*info.Delivery, resp)
+				}
+			case PostBackAction:
+				for _, f := range m.postBackHandlers {
+					message := *info.PostBack
+					message.Sender = info.Sender
+					message.Recipient = info.Recipient
+					message.Time = time.Unix(info.Timestamp, 0)
+					f(message, resp)
+				}
 			}
 		}
 	}

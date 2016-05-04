@@ -34,13 +34,13 @@ type Delivery struct {
 
 // PostBack represents postback callback
 type PostBack struct {
-    // Sender is who the message was sent from.
+	// Sender is who the message was sent from.
 	Sender Sender `json:"-"`
 	// Recipient is who the message was sent to.
 	Recipient Recipient `json:"-"`
 	// Time is when the message was sent.
 	Time time.Time `json:"-"`
-    // PostBack ID
+	// PostBack ID
 	Payload string `json:"payload"`
 }
 

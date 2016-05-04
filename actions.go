@@ -11,6 +11,6 @@ const (
 	// DeliveryAction means that the event was a previous recipient reading their respective
 	// messages.
 	DeliveryAction
-    // PostBackAction represents post call back
+	// PostBackAction represents post call back
 	PostBackAction
 )
