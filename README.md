@@ -10,6 +10,14 @@ This is a Go library for making bots to be used on Facebook messenger. It is bui
 - You need a Facebook development app, and a Facebook page in order to build things.
 - Use [ngrok](https://ngrok.com) to tunnel your locally runnning bot so that Facebook can reach the webhook.
 
+## Breaking Changes
+
+`paked/messenger` is a pretty stable library however, changes will be made which might break backwards compatibility. For the convenience of its users, these are documented here.
+
+
+- 20/5/16: Leaving the `WebhookURL` field blank in `Options` will yield a URL of "/" instead of a panic. 1dc4bcc67dec50e2f58436ffbc7d61ca9da5b943
+- 4/5/16: The URL to use for the webhook is changable in the `Options` struct. eb0e72a5dcd3bfaffcfe88dced6d6ac5247f9da1
+
 ## Inspiration
 
 Messenger takes design cues from:
