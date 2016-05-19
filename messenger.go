@@ -23,7 +23,7 @@ type Options struct {
 	VerifyToken string
 	// Token is the access token of the Facebook page to send messages from.
 	Token string
-	// WebhookURL is where the Messenger client should listen for webhook events.
+	// WebhookURL is where the Messenger client should listen for webhook events. Leaving the string blank implies a path of "/".
 	WebhookURL string
 }
 
@@ -51,6 +51,10 @@ func New(mo Options) *Messenger {
 	m := &Messenger{
 		mux:   http.NewServeMux(),
 		token: mo.Token,
+	}
+
+	if mo.WebhookURL == "" {
+		mo.WebhookURL = "/"
 	}
 
 	m.verifyHandler = newVerifyHandler(mo.VerifyToken)
@@ -113,7 +117,7 @@ func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&rec)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("could not decode response:", err)
 		fmt.Fprintln(w, `{status: 'not ok'}`)
 		return
 	}
