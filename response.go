@@ -184,7 +184,7 @@ type SendMessage struct {
 	Message   MessageData `json:"message"`
 }
 
-// MessageData is a text message with optinal replies to be sent.
+// MessageData is a text message with optional replies to be sent.
 type MessageData struct {
 	Text         string         `json:"text,omitempty"`
 	QuickReplies *[]QuickReplie `json:"quick_replies,omitempty"`
