@@ -28,7 +28,7 @@ func (r *Response) Text(message string) error {
 }
 
 // TextWithReplies sends a textual message with some replies
-func (r *Response) TextWithReplies(message string, replies *[]QuickReplie) error {
+func (r *Response) TextWithReplies(message string, replies []QuickReply) error {
 	m := SendMessage{
 		Recipient: r.to,
 		Message: MessageData{
@@ -186,8 +186,8 @@ type SendMessage struct {
 
 // MessageData is a text message with optional replies to be sent.
 type MessageData struct {
-	Text         string         `json:"text,omitempty"`
-	QuickReplies *[]QuickReplie `json:"quick_replies,omitempty"`
+	Text         string       `json:"text,omitempty"`
+	QuickReplies []QuickReply `json:"quick_replies,omitempty"`
 }
 
 // SendStructuredMessage is a structured message template.
