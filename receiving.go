@@ -57,11 +57,11 @@ type Attachment struct {
 
 // QuickReply is a file which used in a message.
 type QuickReply struct {
-	// ContentType is the type of replie
+	// ContentType is the type of reply
 	ContentType string `json:"content_type"`
-	// Title is the replie title
+	// Title is the reply title
 	Title string `json:"title"`
-	// Payload is the  replie information
+	// Payload is the  reply information
 	Payload string `json:"payload"`
 }
 
