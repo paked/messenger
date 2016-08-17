@@ -35,11 +35,11 @@ type Delivery struct {
 // Delivery represents a the event fired when a message is read by the
 // recipient.
 type Read struct {
-        // RawWatermark is the timestamp before which all messages have been read
+	// RawWatermark is the timestamp before which all messages have been read
 	// by the user
-        RawWatermark int64 `json:"watermark"`
-        // Seq is the sequence the message was sent in.
-        Seq int `json:"seq"`
+	RawWatermark int64 `json:"watermark"`
+	// Seq is the sequence the message was sent in.
+	Seq int `json:"seq"`
 }
 
 // PostBack represents postback callback
@@ -61,5 +61,5 @@ func (d Delivery) Watermark() time.Time {
 
 // Watermark is the RawWatermark timestamp rendered as a time.Time.
 func (r Read) Watermark() time.Time {
-        return time.Unix(r.RawWatermark, 0)
+	return time.Unix(r.RawWatermark, 0)
 }

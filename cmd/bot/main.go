@@ -47,10 +47,10 @@ func main() {
 		fmt.Println("Delivered at:", d.Watermark().Format(time.UnixDate))
 	})
 
-        // Setup a handler to be triggered when a message is read
-        client.HandleDelivery(func(m messenger.Read, r *messenger.Response) {
-                fmt.Println("Read at:", m.Watermark().Format(time.UnixDate))
-        })
+	// Setup a handler to be triggered when a message is read
+	client.HandleDelivery(func(m messenger.Read, r *messenger.Response) {
+		fmt.Println("Read at:", m.Watermark().Format(time.UnixDate))
+	})
 
 	fmt.Println("Serving messenger bot on localhost:8080")
 

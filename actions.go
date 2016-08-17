@@ -8,12 +8,12 @@ const (
 	UnknownAction Action = iota - 1
 	// TextAction means that the event was a text message (May contain attachments).
 	TextAction
-	// DeliveryAction means that the event was advising of a successful delivery to a 
+	// DeliveryAction means that the event was advising of a successful delivery to a
 	// previous recipient.
 	DeliveryAction
-        // ReadAction means that the event was a previous recipient reading their respective
-        // messages.
-        ReadAction
+	// ReadAction means that the event was a previous recipient reading their respective
+	// messages.
+	ReadAction
 	// PostBackAction represents post call back
 	PostBackAction
 )
