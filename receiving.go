@@ -35,6 +35,8 @@ type MessageInfo struct {
 	Delivery *Delivery `json:"delivery"`
 
 	PostBack *PostBack `json:"postback"`
+
+	Read *Read `json:"read"`
 }
 
 // Sender is who the message was sent from.

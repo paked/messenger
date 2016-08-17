@@ -30,8 +30,11 @@ type Options struct {
 // MessageHandler is a handler used for responding to a message containing text.
 type MessageHandler func(Message, *Response)
 
-// DeliveryHandler is a handler used for responding to a read receipt.
+// DeliveryHandler is a handler used for responding to a delivery receipt.
 type DeliveryHandler func(Delivery, *Response)
+
+// ReadHandler is a handler used for responding to a read receipt.
+type ReadHandler func(Read, *Response)
 
 // PostBackHandler is a handler used postback callbacks.
 type PostBackHandler func(PostBack, *Response)
@@ -41,6 +44,7 @@ type Messenger struct {
 	mux              *http.ServeMux
 	messageHandlers  []MessageHandler
 	deliveryHandlers []DeliveryHandler
+        readHandlers []ReadHandler
 	postBackHandlers []PostBackHandler
 	token            string
 	verifyHandler    func(http.ResponseWriter, *http.Request)
@@ -70,9 +74,15 @@ func (m *Messenger) HandleMessage(f MessageHandler) {
 }
 
 // HandleDelivery adds a new DeliveryHandler to the Messenger which will be triggered
-// when a previously sent message is read by the recipient.
+// when a previously sent message is delivered to the recipient.
 func (m *Messenger) HandleDelivery(f DeliveryHandler) {
 	m.deliveryHandlers = append(m.deliveryHandlers, f)
+}
+
+// HandleRead adds a new DeliveryHandler to the Messenger which will be triggered
+// when a previously sent message is read by the recipient.
+func (m *Messenger) HandleRead(f ReadHandler) {
+        m.readHandlers = append(m.readHandlers, f)
 }
 
 // HandlePostBack adds a new PostBackHandler to the Messenger
@@ -159,6 +169,10 @@ func (m *Messenger) dispatch(r Receive) {
 				for _, f := range m.deliveryHandlers {
 					f(*info.Delivery, resp)
 				}
+                        case ReadAction:
+                                for _, f := range m.readHandlers {
+                                        f(*info.Read, resp)
+                                }
 			case PostBackAction:
 				for _, f := range m.postBackHandlers {
 					message := *info.PostBack
@@ -178,6 +192,8 @@ func (m *Messenger) classify(info MessageInfo, e Entry) Action {
 		return TextAction
 	} else if info.Delivery != nil {
 		return DeliveryAction
+        } else if info.Read != nil {
+                return ReadAction
 	} else if info.PostBack != nil {
 		return PostBackAction
 	}
