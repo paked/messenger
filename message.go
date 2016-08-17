@@ -21,12 +21,22 @@ type Message struct {
 	Attachments []Attachment `json:"attachments"`
 }
 
-// Delivery represents a the event fired when a recipient reads one of Messengers sent
-// messages.
+// Delivery represents a the event fired when Facebook delivers a message to the
+// recipient.
 type Delivery struct {
 	// Mids are the IDs of the messages which were read.
 	Mids []string `json:"mids"`
-	// RawWatermark is the timestamp contained in the message of when the read was.
+	// RawWatermark is the timestamp of when the delivery was.
+	RawWatermark int64 `json:"watermark"`
+	// Seq is the sequence the message was sent in.
+	Seq int `json:"seq"`
+}
+
+// Delivery represents a the event fired when a message is read by the
+// recipient.
+type Read struct {
+	// RawWatermark is the timestamp before which all messages have been read
+	// by the user
 	RawWatermark int64 `json:"watermark"`
 	// Seq is the sequence the message was sent in.
 	Seq int `json:"seq"`
@@ -47,4 +57,9 @@ type PostBack struct {
 // Watermark is the RawWatermark timestamp rendered as a time.Time.
 func (d Delivery) Watermark() time.Time {
 	return time.Unix(d.RawWatermark, 0)
+}
+
+// Watermark is the RawWatermark timestamp rendered as a time.Time.
+func (r Read) Watermark() time.Time {
+	return time.Unix(r.RawWatermark, 0)
 }
