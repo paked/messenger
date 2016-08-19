@@ -48,7 +48,7 @@ func main() {
 	})
 
 	// Setup a handler to be triggered when a message is read
-	client.HandleDelivery(func(m messenger.Read, r *messenger.Response) {
+	client.HandleRead(func(m messenger.Read, r *messenger.Response) {
 		fmt.Println("Read at:", m.Watermark().Format(time.UnixDate))
 	})
 
