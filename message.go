@@ -10,6 +10,8 @@ type Message struct {
 	Recipient Recipient `json:"-"`
 	// Time is when the message was sent.
 	Time time.Time `json:"-"`
+	// Message is mine
+	IsEcho bool `json:"is_echo,omitempty"`
 	// Mid is the ID of the message.
 	Mid string `json:"mid"`
 	// Seq is order the message was sent in relation to other messages.
@@ -19,6 +21,8 @@ type Message struct {
 	// Attachments is the information about the attachments which were sent
 	// with the message.
 	Attachments []Attachment `json:"attachments"`
+	// Selected quick reply
+	QuickReply *QuickReply `json:"quick_reply,omitempty"`
 }
 
 // Delivery represents a the event fired when Facebook delivers a message to the

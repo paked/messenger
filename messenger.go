@@ -1,6 +1,7 @@
 package messenger
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,6 +12,8 @@ const (
 	// ProfileURL is the API endpoint used for retrieving profiles.
 	// Used in the form: https://graph.facebook.com/v2.6/<USER_ID>?fields=first_name,last_name,profile_pic&access_token=<PAGE_ACCESS_TOKEN>
 	ProfileURL = "https://graph.facebook.com/v2.6/"
+	// SendSettingsURL is API endpoint for saving settings.
+	SendSettingsURL = "https://graph.facebook.com/v2.6/me/thread_settings"
 )
 
 // Options are the settings used when creating a Messenger client.
@@ -25,6 +28,8 @@ type Options struct {
 	Token string
 	// WebhookURL is where the Messenger client should listen for webhook events. Leaving the string blank implies a path of "/".
 	WebhookURL string
+	// Mux is shared mux between several Messenger objects
+	Mux *http.ServeMux
 }
 
 // MessageHandler is a handler used for responding to a message containing text.
@@ -52,8 +57,12 @@ type Messenger struct {
 
 // New creates a new Messenger. You pass in Options in order to affect settings.
 func New(mo Options) *Messenger {
+	if mo.Mux == nil {
+		mo.Mux = http.NewServeMux()
+	}
+
 	m := &Messenger{
-		mux:   http.NewServeMux(),
+		mux:   mo.Mux,
 		token: mo.Token,
 	}
 
@@ -114,6 +123,65 @@ func (m *Messenger) ProfileByID(id int64) (Profile, error) {
 	err = json.NewDecoder(resp.Body).Decode(&p)
 
 	return p, err
+}
+
+// GreetingSetting sends settings for greeting
+func (m *Messenger) GreetingSetting(text string) error {
+	d := GreetingSetting{
+		SettingType: "greeting",
+		Greeting: GreetingInfo{
+			Text: text,
+		},
+	}
+
+	data, err := json.Marshal(d)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", SendSettingsURL, bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.URL.RawQuery = "access_token=" + m.token
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	defer resp.Body.Close()
+
+	return err
+}
+
+// CallToActionsSetting sends settings for Get Started or Persist Menu
+func (m *Messenger) CallToActionsSetting(state string, actions []CallToActionsItem) error {
+	d := CallToActionsSetting{
+		SettingType:   "call_to_actions",
+		ThreadState:   state,
+		CallToActions: actions,
+	}
+
+	data, err := json.Marshal(d)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", SendSettingsURL, bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.URL.RawQuery = "access_token=" + m.token
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	defer resp.Body.Close()
+
+	return err
 }
 
 // handle is the internal HTTP handler for the webhooks.
@@ -183,6 +251,14 @@ func (m *Messenger) dispatch(r Receive) {
 				}
 			}
 		}
+	}
+}
+
+// Response returns new Response object
+func (m *Messenger) Response(to int64) *Response {
+	return &Response{
+		to:    Recipient{to},
+		token: m.token,
 	}
 }
 
