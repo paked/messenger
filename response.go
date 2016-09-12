@@ -39,7 +39,7 @@ func (r *Response) TextWithReplies(message string, replies []QuickReply) error {
 
 	data, err := json.Marshal(m)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
@@ -122,7 +122,7 @@ func (r *Response) ButtonTemplate(text string, buttons *[]StructuredMessageButto
 
 	data, err := json.Marshal(m)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
@@ -142,7 +142,7 @@ func (r *Response) ButtonTemplate(text string, buttons *[]StructuredMessageButto
 }
 
 // GenericTemplate is a message which allows for structural elements to be sent
-func (r *Response) GenericTemplate(text string, elements *[]StructuredMessageElement) error {
+func (r *Response) GenericTemplate(elements *[]StructuredMessageElement) error {
 	m := SendStructuredMessage{
 		Recipient: r.to,
 		Message: StructuredMessageData{
@@ -159,7 +159,35 @@ func (r *Response) GenericTemplate(text string, elements *[]StructuredMessageEle
 
 	data, err := json.Marshal(m)
 	if err != nil {
-		return nil
+		return err
+	}
+
+	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.URL.RawQuery = "access_token=" + r.token
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	defer resp.Body.Close()
+
+	return err
+}
+
+// SenderAction sends a info about sender action
+func (r *Response) SenderAction(action string) error {
+	m := SendSenderAction{
+		Recipient:    r.to,
+		SenderAction: action,
+	}
+
+	data, err := json.Marshal(m)
+	if err != nil {
+		return err
 	}
 
 	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
@@ -212,23 +240,32 @@ type StructuredMessageAttachment struct {
 // StructuredMessagePayload is the actual payload of an attachment
 type StructuredMessagePayload struct {
 	// TemplateType must be button, generic or receipt
-	TemplateType string                      `json:"template_type"`
+	TemplateType string                      `json:"template_type,omitempty"`
 	Text         string                      `json:"text,omitempty"`
 	Elements     *[]StructuredMessageElement `json:"elements,omitempty"`
 	Buttons      *[]StructuredMessageButton  `json:"buttons,omitempty"`
+	Url          string                      `json:"url,omitempty"`
 }
 
 // StructuredMessageElement is a response containing structural elements
 type StructuredMessageElement struct {
 	Title    string                    `json:"title"`
 	ImageURL string                    `json:"image_url"`
+	ItemURL  string                    `json:"item_url"`
 	Subtitle string                    `json:"subtitle"`
 	Buttons  []StructuredMessageButton `json:"buttons"`
 }
 
 // StructuredMessageButton is a response containing buttons
 type StructuredMessageButton struct {
-	Type  string `json:"type"`
-	URL   string `json:"url"`
-	Title string `json:"title"`
+	Type    string `json:"type"`
+	URL     string `json:"url,omitempty"`
+	Title   string `json:"title"`
+	Payload string `json:"payload,omitempty"`
+}
+
+// SendSenderAction is the information about sender action
+type SendSenderAction struct {
+	Recipient    Recipient `json:"recipient"`
+	SenderAction string    `json:"sender_action"`
 }
