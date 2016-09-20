@@ -264,6 +264,22 @@ func (m *Messenger) Response(to int64) *Response {
 	}
 }
 
+// Send func will send a message to a user without first receiving a message.
+func (m *Messenger) Send(to Recipient, message string, replies []QuickReply) error {
+	response := &Response{
+		token: m.token,
+		to:    to,
+	}
+
+	err := response.TextWithReplies(message, replies)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // classify determines what type of message a webhook event is.
 func (m *Messenger) classify(info MessageInfo, e Entry) Action {
 	if info.Message != nil {
