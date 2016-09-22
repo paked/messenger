@@ -264,6 +264,21 @@ func (m *Messenger) Response(to int64) *Response {
 	}
 }
 
+// Send will send a textual message to a user. This user must have previously initiated a conversation with the bot.
+func (m *Messenger) Send(to Recipient, message string) error {
+	return m.SendWithReplies(to, message, nil)
+}
+
+// SendWithReplies sends a textual message to a user, but gives them the option of numerous quick response options.
+func (m *Messenger) SendWithReplies(to Recipient, message string, replies []QuickReply) error {
+	response := &Response{
+		token: m.token,
+		to:    to,
+	}
+
+	return response.TextWithReplies(message, replies)
+}
+
 // classify determines what type of message a webhook event is.
 func (m *Messenger) classify(info MessageInfo, e Entry) Action {
 	if info.Message != nil {
