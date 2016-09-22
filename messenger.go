@@ -264,13 +264,12 @@ func (m *Messenger) Response(to int64) *Response {
 	}
 }
 
-// Send func will send a message to a user who you send a message to has to have previously messaged the bot
-// without first receiving a message.
+// Send will send a textual message to a user. This user must have previously initiated a conversation with the bot.
 func (m *Messenger) Send(to Recipient, message string) error {
 	return m.SendWithReplies(to, message, nil)
 }
 
-// SendWithReplies sends a textual message with some replies.
+// SendWithReplies sends a textual message to a user, but gives them the option of numerous quick response options.
 func (m *Messenger) SendWithReplies(to Recipient, message string, replies []QuickReply) error {
 	response := &Response{
 		token: m.token,
