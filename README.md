@@ -25,3 +25,9 @@ Messenger takes design cues from:
 
 - [`net/http`](https://godoc.org/net/http)
 - [`github.com/nickvanw/ircx`](https://github.com/nickvanw/ircx)
+
+## Example
+
+Awesome project lists using [Messenger](https://github.com/paked/messenger) library.
+
+* [drone-facebook](https://github.com/appleboy/drone-facebook): Drone plugin for sending Facebook notifications
