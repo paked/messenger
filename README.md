@@ -26,8 +26,9 @@ Messenger takes design cues from:
 - [`net/http`](https://godoc.org/net/http)
 - [`github.com/nickvanw/ircx`](https://github.com/nickvanw/ircx)
 
-## Example
+## Projects
 
-Awesome project lists using [Messenger](https://github.com/paked/messenger) library.
+This is a list of projects use `messenger`. If you would like to add your own, submit a [Pull Request](https://github.com/paked/messenger/pulls/new) adding it below.
 
-* [drone-facebook](https://github.com/appleboy/drone-facebook): Drone plugin for sending Facebook notifications
+- [meme-maker](https://github.com/paked/messenger) by @paked: A bot which, given a photo and a caption, will create a macro meme.
+- [drone-facebook](https://github.com/appleboy/drone-facebook) by @appleboy: [Drone.io](https://drone.io) plugin which sends Facebook notifications
