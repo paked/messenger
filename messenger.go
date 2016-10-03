@@ -232,7 +232,7 @@ func (m *Messenger) dispatch(r Receive) {
 					message := *info.Message
 					message.Sender = info.Sender
 					message.Recipient = info.Recipient
-					message.Time = time.Unix(info.Timestamp, 0)
+					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
 					f(message, resp)
 				}
 			case DeliveryAction:
@@ -248,7 +248,7 @@ func (m *Messenger) dispatch(r Receive) {
 					message := *info.PostBack
 					message.Sender = info.Sender
 					message.Recipient = info.Recipient
-					message.Time = time.Unix(info.Timestamp, 0)
+					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
 					f(message, resp)
 				}
 			}

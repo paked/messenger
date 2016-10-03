@@ -60,10 +60,10 @@ type PostBack struct {
 
 // Watermark is the RawWatermark timestamp rendered as a time.Time.
 func (d Delivery) Watermark() time.Time {
-	return time.Unix(d.RawWatermark, 0)
+	return time.Unix(d.RawWatermark/int64(time.Microsecond), 0)
 }
 
 // Watermark is the RawWatermark timestamp rendered as a time.Time.
 func (r Read) Watermark() time.Time {
-	return time.Unix(r.RawWatermark, 0)
+	return time.Unix(r.RawWatermark/int64(time.Microsecond), 0)
 }
