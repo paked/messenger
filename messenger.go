@@ -122,11 +122,7 @@ func (m *Messenger) ProfileByID(id int64) (Profile, error) {
 	resp, err := client.Do(req)
 	defer resp.Body.Close()
 
-	qr := QueryResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&qr)
-	if qr.Error != nil {
-		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
-	}
+	err = json.NewDecoder(resp.Body).Decode(&p)
 
 	return p, err
 }
@@ -156,15 +152,12 @@ func (m *Messenger) GreetingSetting(text string) error {
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 
-	qr := QueryResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&qr)
-	if qr.Error != nil {
-		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
-	}
-
-	return err
+	return checkFacebookError(resp.Body)
 }
 
 // CallToActionsSetting sends settings for Get Started or Persist Menu
@@ -191,15 +184,12 @@ func (m *Messenger) CallToActionsSetting(state string, actions []CallToActionsIt
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 
-	qr := QueryResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&qr)
-	if qr.Error != nil {
-		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
-	}
-
-	return err
+	return checkFacebookError(resp.Body)
 }
 
 // handle is the internal HTTP handler for the webhooks.

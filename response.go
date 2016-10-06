@@ -31,6 +31,18 @@ type QueryError struct {
 	FBTraceID string `json:"fbtrace_id"`
 }
 
+func checkFacebookError(r io.Reader) error {
+	var err error
+
+	qr := QueryResponse{}
+	err = json.NewDecoder(r).Decode(&qr)
+	if qr.Error != nil {
+		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
+	}
+
+	return err
+}
+
 // Response is used for responding to events with messages.
 type Response struct {
 	token string
@@ -151,15 +163,12 @@ func (r *Response) ButtonTemplate(text string, buttons *[]StructuredMessageButto
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 
-	qr := QueryResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&qr)
-	if qr.Error != nil {
-		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
-	}
-
-	return err
+	return checkFacebookError(resp.Body)
 }
 
 // GenericTemplate is a message which allows for structural elements to be sent
@@ -194,15 +203,12 @@ func (r *Response) GenericTemplate(elements *[]StructuredMessageElement) error {
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 
-	qr := QueryResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&qr)
-	if qr.Error != nil {
-		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
-	}
-
-	return err
+	return checkFacebookError(resp.Body)
 }
 
 // SenderAction sends a info about sender action
@@ -228,15 +234,12 @@ func (r *Response) SenderAction(action string) error {
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 
-	qr := QueryResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&qr)
-	if qr.Error != nil {
-		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
-	}
-
-	return err
+	return checkFacebookError(resp.Body)
 }
 
 // SendMessage is the information sent in an API request to Facebook.
