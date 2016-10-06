@@ -36,7 +36,7 @@ type Delivery struct {
 	Seq int `json:"seq"`
 }
 
-// Delivery represents a the event fired when a message is read by the
+// Read represents a the event fired when a message is read by the
 // recipient.
 type Read struct {
 	// RawWatermark is the timestamp before which all messages have been read

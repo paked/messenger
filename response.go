@@ -16,6 +16,21 @@ const (
 	SendMessageURL = "https://graph.facebook.com/v2.6/me/messages"
 )
 
+// QueryResponse is the response sent back by facebook when setting up things
+// like greetings or call-to-actions
+type QueryResponse struct {
+	Error  *QueryError `json:"error,omitempty"`
+	Result string      `json:"result,omitempty"`
+}
+
+// QueryError is representing an error sent back by facebook
+type QueryError struct {
+	Message   string `json:"message"`
+	Type      string `json:"type"`
+	Code      int    `json:"code"`
+	FbtraceID string `json:"fbtrace_id"`
+}
+
 // Response is used for responding to events with messages.
 type Response struct {
 	token string

@@ -154,6 +154,12 @@ func (m *Messenger) GreetingSetting(text string) error {
 	resp, err := client.Do(req)
 	defer resp.Body.Close()
 
+	qr := QueryResponse{}
+	err = json.NewDecoder(resp.Body).Decode(&qr)
+	if qr.Error != nil {
+		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
+	}
+
 	return err
 }
 
@@ -182,6 +188,12 @@ func (m *Messenger) CallToActionsSetting(state string, actions []CallToActionsIt
 
 	resp, err := client.Do(req)
 	defer resp.Body.Close()
+
+	qr := QueryResponse{}
+	err = json.NewDecoder(resp.Body).Decode(&qr)
+	if qr.Error != nil {
+		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
+	}
 
 	return err
 }
