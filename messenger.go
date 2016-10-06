@@ -122,7 +122,11 @@ func (m *Messenger) ProfileByID(id int64) (Profile, error) {
 	resp, err := client.Do(req)
 	defer resp.Body.Close()
 
-	err = json.NewDecoder(resp.Body).Decode(&p)
+	qr := QueryResponse{}
+	err = json.NewDecoder(resp.Body).Decode(&qr)
+	if qr.Error != nil {
+		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
+	}
 
 	return p, err
 }

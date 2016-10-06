@@ -16,19 +16,19 @@ const (
 	SendMessageURL = "https://graph.facebook.com/v2.6/me/messages"
 )
 
-// QueryResponse is the response sent back by facebook when setting up things
+// QueryResponse is the response sent back by Facebook when setting up things
 // like greetings or call-to-actions
 type QueryResponse struct {
 	Error  *QueryError `json:"error,omitempty"`
 	Result string      `json:"result,omitempty"`
 }
 
-// QueryError is representing an error sent back by facebook
+// QueryError is representing an error sent back by Facebook
 type QueryError struct {
 	Message   string `json:"message"`
 	Type      string `json:"type"`
 	Code      int    `json:"code"`
-	FbtraceID string `json:"fbtrace_id"`
+	FBTraceID string `json:"fbtrace_id"`
 }
 
 // Response is used for responding to events with messages.
@@ -153,6 +153,12 @@ func (r *Response) ButtonTemplate(text string, buttons *[]StructuredMessageButto
 	resp, err := client.Do(req)
 	defer resp.Body.Close()
 
+	qr := QueryResponse{}
+	err = json.NewDecoder(resp.Body).Decode(&qr)
+	if qr.Error != nil {
+		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
+	}
+
 	return err
 }
 
@@ -190,6 +196,12 @@ func (r *Response) GenericTemplate(elements *[]StructuredMessageElement) error {
 	resp, err := client.Do(req)
 	defer resp.Body.Close()
 
+	qr := QueryResponse{}
+	err = json.NewDecoder(resp.Body).Decode(&qr)
+	if qr.Error != nil {
+		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
+	}
+
 	return err
 }
 
@@ -217,6 +229,12 @@ func (r *Response) SenderAction(action string) error {
 
 	resp, err := client.Do(req)
 	defer resp.Body.Close()
+
+	qr := QueryResponse{}
+	err = json.NewDecoder(resp.Body).Decode(&qr)
+	if qr.Error != nil {
+		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
+	}
 
 	return err
 }
