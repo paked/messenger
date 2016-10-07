@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -120,9 +121,28 @@ func (m *Messenger) ProfileByID(id int64) (Profile, error) {
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
+	if err != nil {
+		return p, err
+	}
 	defer resp.Body.Close()
 
-	err = json.NewDecoder(resp.Body).Decode(&p)
+	content, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return p, err
+	}
+
+	err = json.Unmarshal(content, &p)
+	if err != nil {
+		return p, err
+	}
+
+	if p == *new(Profile) {
+		qr := QueryResponse{}
+		err = json.Unmarshal(content, &qr)
+		if qr.Error != nil {
+			err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
+		}
+	}
 
 	return p, err
 }
@@ -152,9 +172,12 @@ func (m *Messenger) GreetingSetting(text string) error {
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 
-	return err
+	return checkFacebookError(resp.Body)
 }
 
 // CallToActionsSetting sends settings for Get Started or Persist Menu
@@ -181,9 +204,12 @@ func (m *Messenger) CallToActionsSetting(state string, actions []CallToActionsIt
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 
-	return err
+	return checkFacebookError(resp.Body)
 }
 
 // handle is the internal HTTP handler for the webhooks.
