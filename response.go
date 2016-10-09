@@ -11,9 +11,21 @@ import (
 	"net/http"
 )
 
+// AttachmentType is attachment type.
+type AttachmentType string
+
 const (
 	// SendMessageURL is API endpoint for sending messages.
 	SendMessageURL = "https://graph.facebook.com/v2.6/me/messages"
+
+	// ImageAttachment is image attachment type.
+	ImageAttachment AttachmentType = "image"
+	// AudioAttachment is audio attachment type.
+	AudioAttachment AttachmentType = "audio"
+	// VideoAttachment is video attachment type.
+	VideoAttachment AttachmentType = "video"
+	// FileAttachment is file attachment type.
+	FileAttachment AttachmentType = "file"
 )
 
 // QueryResponse is the response sent back by Facebook when setting up things
@@ -128,6 +140,41 @@ func (r *Response) Image(im image.Image) error {
 	res.ReadFrom(resp.Body)
 	fmt.Println(res.String(), "DONE!")
 	return nil
+}
+
+// Attachment sends an image, sound, video or a regular file to a chat.
+func (r *Response) Attachment(dataType AttachmentType, url string) error {
+	m := SendStructuredMessage{
+		Recipient: r.to,
+		Message: StructuredMessageData{
+			Attachment: StructuredMessageAttachment{
+				Type: dataType,
+				Payload: StructuredMessagePayload{
+					Url: url,
+				},
+			},
+		},
+	}
+
+	data, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.URL.RawQuery = "access_token=" + r.token
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	defer resp.Body.Close()
+
+	return err
 }
 
 // ButtonTemplate sends a message with the main contents being button elements
@@ -268,7 +315,7 @@ type StructuredMessageData struct {
 // StructuredMessageAttachment is the attachment of a structured message.
 type StructuredMessageAttachment struct {
 	// Type must be template
-	Type string `json:"type"`
+	Type AttachmentType `json:"type"`
 	// Payload is the information for the file which was sent in the attachment.
 	Payload StructuredMessagePayload `json:"payload"`
 }
