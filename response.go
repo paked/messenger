@@ -144,11 +144,7 @@ func (r *Response) Attachment(dataType AttachmentType, url string) error {
 }
 
 // AttachmentData sends an image, sound, video or a regular file to a chat via an io.Reader.
-func (r *Response) AttachmentData(
-	dataType AttachmentType,
-	filename string,
-	filedata io.Reader,
-) error {
+func (r *Response) AttachmentData(dataType AttachmentType, filename string, filedata io.Reader) error {
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
 
@@ -182,7 +178,6 @@ func (r *Response) AttachmentData(
 
 	var res bytes.Buffer
 	res.ReadFrom(resp.Body)
-	fmt.Println(res.String(), "DONE!")
 	return nil
 }
 
