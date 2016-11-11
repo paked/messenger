@@ -99,47 +99,13 @@ func (r *Response) TextWithReplies(message string, replies []QuickReply) error {
 
 // Image sends an image.
 func (r *Response) Image(im image.Image) error {
-	var b bytes.Buffer
-	w := multipart.NewWriter(&b)
-
-	data, err := w.CreateFormFile("fielddata", "meme.jpg")
-	if err != nil {
-		return err
-	}
-
 	imageBytes := new(bytes.Buffer)
-	err = jpeg.Encode(imageBytes, im, nil)
+	err := jpeg.Encode(imageBytes, im, nil)
 	if err != nil {
 		return err
 	}
 
-	_, err = io.Copy(data, imageBytes)
-	if err != nil {
-		return err
-	}
-
-	w.WriteField("recipient", fmt.Sprintf(`{"id":"%v"}`, r.to.ID))
-	w.WriteField("message", `{"attachment":{"type":"image", "payload":{}}}`)
-
-	req, err := http.NewRequest("POST", SendMessageURL, &b)
-	if err != nil {
-		return err
-	}
-
-	req.URL.RawQuery = "access_token=" + r.token
-
-	req.Header.Set("Content-Type", w.FormDataContentType())
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	var res bytes.Buffer
-	res.ReadFrom(resp.Body)
-	fmt.Println(res.String(), "DONE!")
-	return nil
+	return r.AttachmentData(ImageAttachment, "meme.jpg", imageBytes)
 }
 
 // Attachment sends an image, sound, video or a regular file to a chat.
@@ -175,6 +141,44 @@ func (r *Response) Attachment(dataType AttachmentType, url string) error {
 	defer resp.Body.Close()
 
 	return err
+}
+
+// AttachmentData sends an image, sound, video or a regular file to a chat via an io.Reader.
+func (r *Response) AttachmentData(dataType AttachmentType, filename string, filedata io.Reader) error {
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+
+	data, err := w.CreateFormFile("filedata", filename)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(data, filedata)
+	if err != nil {
+		return err
+	}
+
+	w.WriteField("recipient", fmt.Sprintf(`{"id":"%v"}`, r.to.ID))
+	w.WriteField("message", fmt.Sprintf(`{"attachment":{"type":"%v", "payload":{}}}`, dataType))
+
+	req, err := http.NewRequest("POST", SendMessageURL, &b)
+	if err != nil {
+		return err
+	}
+
+	req.URL.RawQuery = "access_token=" + r.token
+
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	var res bytes.Buffer
+	res.ReadFrom(resp.Body)
+	return nil
 }
 
 // ButtonTemplate sends a message with the main contents being button elements
