@@ -8,7 +8,7 @@ This is a Go library for making bots to be used on Facebook messenger. It is bui
 
 - Follow the [quickstart](https://developers.facebook.com/docs/messenger-platform/quickstart) guide for getting everything set up!
 - You need a Facebook development app, and a Facebook page in order to build things.
-- Use [ngrok](https://ngrok.com) to tunnel your locally runnning bot so that Facebook can reach the webhook.
+- Use [ngrok](https://ngrok.com) to tunnel your locally running bot so that Facebook can reach the webhook.
 
 ## Breaking Changes
 
