@@ -20,8 +20,10 @@ type CallToActionsSetting struct {
 
 // CallToActionsItem contains Get Started button or item of Persist Menu
 type CallToActionsItem struct {
-	Type    string `json:"type,omitempty"`
-	Title   string `json:"title,omitempty"`
-	Payload string `json:"payload,omitempty"`
-	URL     string `json:"url,omitempty"`
+	Type               string `json:"type,omitempty"`
+	Title              string `json:"title,omitempty"`
+	Payload            string `json:"payload,omitempty"`
+	URL                string `json:"url,omitempty"`
+	WebviewHeightRatio string `json:"webview_height_ratio,omitempty"`
+	MessengerExtension bool   `json:"messenger_extensions,omitempty"`
 }
