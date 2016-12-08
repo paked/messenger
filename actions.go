@@ -16,4 +16,6 @@ const (
 	ReadAction
 	// PostBackAction represents post call back
 	PostBackAction
+	// OptInAction represents opting in through the Send to Messenger button
+	OptInAction
 )

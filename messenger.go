@@ -47,6 +47,9 @@ type ReadHandler func(Read, *Response)
 // PostBackHandler is a handler used postback callbacks.
 type PostBackHandler func(PostBack, *Response)
 
+// OptInHandler is a handler used to handle opt-ins.
+type OptInHandler func(OptIn, *Response)
+
 // Messenger is the client which manages communication with the Messenger Platform API.
 type Messenger struct {
 	mux              *http.ServeMux
@@ -54,6 +57,7 @@ type Messenger struct {
 	deliveryHandlers []DeliveryHandler
 	readHandlers     []ReadHandler
 	postBackHandlers []PostBackHandler
+	optInHandlers    []OptInHandler
 	token            string
 	verifyHandler    func(http.ResponseWriter, *http.Request)
 }
@@ -89,6 +93,12 @@ func (m *Messenger) HandleMessage(f MessageHandler) {
 // when a previously sent message is delivered to the recipient.
 func (m *Messenger) HandleDelivery(f DeliveryHandler) {
 	m.deliveryHandlers = append(m.deliveryHandlers, f)
+}
+
+// HandleOptIn adds a new OptInHandler to the Messenger which will be triggered
+// once a user opts in to communicate with the bot.
+func (m *Messenger) HandleOptIn(f OptInHandler) {
+	m.optInHandlers = append(m.optInHandlers, f)
 }
 
 // HandleRead adds a new DeliveryHandler to the Messenger which will be triggered
@@ -277,6 +287,14 @@ func (m *Messenger) dispatch(r Receive) {
 					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
 					f(message, resp)
 				}
+			case OptInAction:
+				for _, f := range m.optInHandlers {
+					message := *info.OptIn
+					message.Sender = info.Sender
+					message.Recipient = info.Recipient
+					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
+					f(message, resp)
+				}
 			}
 		}
 	}
@@ -325,6 +343,8 @@ func (m *Messenger) classify(info MessageInfo, e Entry) Action {
 		return ReadAction
 	} else if info.PostBack != nil {
 		return PostBackAction
+	} else if info.OptIn != nil {
+		return OptInAction
 	}
 	return UnknownAction
 }
