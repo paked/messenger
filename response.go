@@ -347,7 +347,7 @@ type StructuredMessageElement struct {
 type StructuredMessageButton struct {
 	Type    string `json:"type"`
 	URL     string `json:"url,omitempty"`
-	Title   string `json:"title"`
+	Title   string `json:"title,omitempty"`
 	Payload string `json:"payload,omitempty"`
 }
 
