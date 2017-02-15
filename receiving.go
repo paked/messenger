@@ -41,6 +41,8 @@ type MessageInfo struct {
 	Read *Read `json:"read"`
 
 	OptIn *OptIn `json:"optin"`
+
+	ReferralMessage *ReferralMessage `json:"referral"`
 }
 
 type OptIn struct {
@@ -52,6 +54,28 @@ type OptIn struct {
 	Time time.Time `json:"-"`
 	// Ref is the reference as given
 	Ref string `json:"ref"`
+}
+
+// ReferralMessage represents referral endpoint
+type ReferralMessage struct {
+	*Referral
+
+	// Sender is the sender of the message
+	Sender Sender `json:"-"`
+	// Recipient is who the message was sent to.
+	Recipient Recipient `json:"-"`
+	// Time is when the message was sent.
+	Time time.Time `json:"-"`
+}
+
+// Referral represents referral info
+type Referral struct {
+	// Data originally passed in the ref param
+	Ref string `json:"ref"`
+	// Source type
+	Source string `json:"source"`
+	// The identifier dor the referral
+	Type string `json:"type"`
 }
 
 // Sender is who the message was sent from.
