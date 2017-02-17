@@ -56,6 +56,8 @@ type PostBack struct {
 	Time time.Time `json:"-"`
 	// PostBack ID
 	Payload string `json:"payload"`
+	// Optional referral info
+	Referral Referral `json:"referral"`
 }
 
 // Watermark is the RawWatermark timestamp rendered as a time.Time.

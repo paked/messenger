@@ -50,6 +50,9 @@ type PostBackHandler func(PostBack, *Response)
 // OptInHandler is a handler used to handle opt-ins.
 type OptInHandler func(OptIn, *Response)
 
+// ReferralHandler is a handler used postback callbacks.
+type ReferralHandler func(ReferralMessage, *Response)
+
 // Messenger is the client which manages communication with the Messenger Platform API.
 type Messenger struct {
 	mux              *http.ServeMux
@@ -58,6 +61,7 @@ type Messenger struct {
 	readHandlers     []ReadHandler
 	postBackHandlers []PostBackHandler
 	optInHandlers    []OptInHandler
+	referralHandlers []ReferralHandler
 	token            string
 	verifyHandler    func(http.ResponseWriter, *http.Request)
 }
@@ -110,6 +114,11 @@ func (m *Messenger) HandleRead(f ReadHandler) {
 // HandlePostBack adds a new PostBackHandler to the Messenger
 func (m *Messenger) HandlePostBack(f PostBackHandler) {
 	m.postBackHandlers = append(m.postBackHandlers, f)
+}
+
+// HandleReferral adds a new ReferralHandler to the Messenger
+func (m *Messenger) HandleReferral(f ReferralHandler) {
+	m.referralHandlers = append(m.referralHandlers, f)
 }
 
 // Handler returns the Messenger in HTTP client form.
@@ -295,6 +304,14 @@ func (m *Messenger) dispatch(r Receive) {
 					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
 					f(message, resp)
 				}
+			case ReferralAction:
+				for _, f := range m.referralHandlers {
+					message := *info.ReferralMessage
+					message.Sender = info.Sender
+					message.Recipient = info.Recipient
+					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
+					f(message, resp)
+				}
 			}
 		}
 	}
@@ -345,6 +362,8 @@ func (m *Messenger) classify(info MessageInfo, e Entry) Action {
 		return PostBackAction
 	} else if info.OptIn != nil {
 		return OptInAction
+	} else if info.ReferralMessage != nil {
+		return ReferralAction
 	}
 	return UnknownAction
 }
