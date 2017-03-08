@@ -18,4 +18,6 @@ const (
 	PostBackAction
 	// OptInAction represents opting in through the Send to Messenger button
 	OptInAction
+	// ReferralAction represents ?ref parameter in m.me URLs
+	ReferralAction
 )
