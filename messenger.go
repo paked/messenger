@@ -330,6 +330,15 @@ func (m *Messenger) Send(to Recipient, message string) error {
 	return m.SendWithReplies(to, message, nil)
 }
 
+// SendGeneralMessage will send the GenericTemplate message
+func (m *Messenger) SendGeneralMessage(to Recipient, elements *[]StructuredMessageElement) error {
+	r := &Response{
+		token: m.token,
+		to:    to,
+	}
+	return r.GenericTemplate(elements)
+}
+
 // SendWithReplies sends a textual message to a user, but gives them the option of numerous quick response options.
 func (m *Messenger) SendWithReplies(to Recipient, message string, replies []QuickReply) error {
 	response := &Response{

@@ -72,6 +72,38 @@ func (r *Response) TextWithReplies(message string, replies []QuickReply) error {
 		Recipient: r.to,
 		Message: MessageData{
 			Text:         message,
+			Attachment:   nil,
+			QuickReplies: replies,
+		},
+	}
+
+	data, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.URL.RawQuery = "access_token=" + r.token
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	defer resp.Body.Close()
+
+	return err
+}
+
+// AttachmentWithReplies sends a attachment message with some replies
+func (r *Response) AttachmentWithReplies(attachment *StructuredMessageAttachment, replies []QuickReply) error {
+	m := SendMessage{
+		Recipient: r.to,
+		Message: MessageData{
+			Attachment:   attachment,
 			QuickReplies: replies,
 		},
 	}
@@ -299,10 +331,11 @@ type SendMessage struct {
 	Message   MessageData `json:"message"`
 }
 
-// MessageData is a text message with optional replies to be sent.
+// MessageData is a message consisting of text or an attachment, with an additional selection of optional quick replies.
 type MessageData struct {
-	Text         string       `json:"text,omitempty"`
-	QuickReplies []QuickReply `json:"quick_replies,omitempty"`
+	Text         string                       `json:"text,omitempty"`
+	Attachment   *StructuredMessageAttachment `json:"attachment,omitempty"`
+	QuickReplies []QuickReply                 `json:"quick_replies,omitempty"`
 }
 
 // SendStructuredMessage is a structured message template.
