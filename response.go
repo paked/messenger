@@ -331,7 +331,7 @@ type SendMessage struct {
 	Message   MessageData `json:"message"`
 }
 
-// MessageData is a text Or attachment message with optional replies to be sent.
+// MessageData is a message consisting of text or an attachment, with an additional selection of optional quick replies.
 type MessageData struct {
 	Text         string                       `json:"text,omitempty"`
 	Attachment   *StructuredMessageAttachment `json:"attachment,omitempty"`

@@ -330,7 +330,7 @@ func (m *Messenger) Send(to Recipient, message string) error {
 	return m.SendWithReplies(to, message, nil)
 }
 
-//SendGeneralMessage will send the GenericTemplate message
+// SendGeneralMessage will send the GenericTemplate message
 func (m *Messenger) SendGeneralMessage(to Recipient, elements *[]StructuredMessageElement) error {
 	r := &Response{
 		token: m.token,
