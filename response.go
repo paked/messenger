@@ -76,26 +76,7 @@ func (r *Response) TextWithReplies(message string, replies []QuickReply) error {
 			QuickReplies: replies,
 		},
 	}
-
-	data, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.URL.RawQuery = "access_token=" + r.token
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	defer resp.Body.Close()
-
-	return err
+	return r.PostToMessenger(&m)
 }
 
 // AttachmentWithReplies sends a attachment message with some replies
@@ -107,26 +88,7 @@ func (r *Response) AttachmentWithReplies(attachment *StructuredMessageAttachment
 			QuickReplies: replies,
 		},
 	}
-
-	data, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.URL.RawQuery = "access_token=" + r.token
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	defer resp.Body.Close()
-
-	return err
+	return r.PostToMessenger(&m)
 }
 
 // Image sends an image.
@@ -153,26 +115,7 @@ func (r *Response) Attachment(dataType AttachmentType, url string) error {
 			},
 		},
 	}
-
-	data, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.URL.RawQuery = "access_token=" + r.token
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	defer resp.Body.Close()
-
-	return err
+	return r.PostToMessenger(&m)
 }
 
 // AttachmentData sends an image, sound, video or a regular file to a chat via an io.Reader.
@@ -230,28 +173,7 @@ func (r *Response) ButtonTemplate(text string, buttons *[]StructuredMessageButto
 		},
 	}
 
-	data, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.URL.RawQuery = "access_token=" + r.token
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	return checkFacebookError(resp.Body)
+	return r.PostToMessenger(&m)
 }
 
 // GenericTemplate is a message which allows for structural elements to be sent
@@ -269,29 +191,7 @@ func (r *Response) GenericTemplate(elements *[]StructuredMessageElement) error {
 			},
 		},
 	}
-
-	data, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest("POST", SendMessageURL, bytes.NewBuffer(data))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.URL.RawQuery = "access_token=" + r.token
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	return checkFacebookError(resp.Body)
+	return r.PostToMessenger(&m)
 }
 
 // SenderAction sends a info about sender action
@@ -300,7 +200,11 @@ func (r *Response) SenderAction(action string) error {
 		Recipient:    r.to,
 		SenderAction: action,
 	}
+	return r.PostToMessenger(&m)
+}
 
+// PostToMessenger posts the message to messenger, return the error if there's any
+func (r *Response) PostToMessenger(m interface{}) error {
 	data, err := json.Marshal(m)
 	if err != nil {
 		return err
@@ -314,14 +218,14 @@ func (r *Response) SenderAction(action string) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = "access_token=" + r.token
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-
+	if resp.StatusCode == 200 {
+		return nil
+	}
 	return checkFacebookError(resp.Body)
 }
 
