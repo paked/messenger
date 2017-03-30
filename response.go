@@ -383,7 +383,7 @@ type StructuredMessageButton struct {
 	Title               string `json:"title,omitempty"`
 	Payload             string `json:"payload,omitempty"`
 	WebviewHeightRatio  string `json:"webview_height_ratio,omitempty"`
-	MessengerExtensions string `json:"messenger_extensions,omitempty"`
+	MessengerExtensions bool   `json:"messenger_extensions,omitempty"`
 	FallbackURL         string `json:"fallback_url,omitempty"`
 	WebviewShareButton  string `json:"webview_share_button,omitempty"`
 }
