@@ -76,7 +76,7 @@ func (r *Response) TextWithReplies(message string, replies []QuickReply) error {
 			QuickReplies: replies,
 		},
 	}
-	return r.PostToMessenger(&m)
+	return r.DispatchMessage(&m)
 }
 
 // AttachmentWithReplies sends a attachment message with some replies
@@ -88,7 +88,7 @@ func (r *Response) AttachmentWithReplies(attachment *StructuredMessageAttachment
 			QuickReplies: replies,
 		},
 	}
-	return r.PostToMessenger(&m)
+	return r.DispatchMessage(&m)
 }
 
 // Image sends an image.
@@ -115,7 +115,7 @@ func (r *Response) Attachment(dataType AttachmentType, url string) error {
 			},
 		},
 	}
-	return r.PostToMessenger(&m)
+	return r.DispatchMessage(&m)
 }
 
 // AttachmentData sends an image, sound, video or a regular file to a chat via an io.Reader.
@@ -173,7 +173,7 @@ func (r *Response) ButtonTemplate(text string, buttons *[]StructuredMessageButto
 		},
 	}
 
-	return r.PostToMessenger(&m)
+	return r.DispatchMessage(&m)
 }
 
 // GenericTemplate is a message which allows for structural elements to be sent
@@ -191,7 +191,7 @@ func (r *Response) GenericTemplate(elements *[]StructuredMessageElement) error {
 			},
 		},
 	}
-	return r.PostToMessenger(&m)
+	return r.DispatchMessage(&m)
 }
 
 // SenderAction sends a info about sender action
@@ -200,11 +200,11 @@ func (r *Response) SenderAction(action string) error {
 		Recipient:    r.to,
 		SenderAction: action,
 	}
-	return r.PostToMessenger(&m)
+	return r.DispatchMessage(&m)
 }
 
-// PostToMessenger posts the message to messenger, return the error if there's any
-func (r *Response) PostToMessenger(m interface{}) error {
+// DispatchMessage posts the message to messenger, return the error if there's any
+func (r *Response) DispatchMessage(m interface{}) error {
 	data, err := json.Marshal(m)
 	if err != nil {
 		return err
