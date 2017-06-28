@@ -14,6 +14,8 @@ var (
 	verifyToken = conf.String("verify-token", "mad-skrilla", "The token used to verify facebook")
 	verify      = conf.Bool("should-verify", false, "Whether or not the app should verify itself")
 	pageToken   = conf.String("page-token", "not skrilla", "The token that is used to verify the page on facebook")
+	appSecret   = conf.String("app-secret", "", "The app secret from the facebook developer portal")
+	port        = conf.Int("port", 8080, "The port used to serve the messenger bot")
 )
 
 func main() {
@@ -26,6 +28,7 @@ func main() {
 	// Create a new messenger client
 	client := messenger.New(messenger.Options{
 		Verify:      *verify,
+		AppSecret:   *appSecret,
 		VerifyToken: *verifyToken,
 		Token:       *pageToken,
 	})
@@ -52,7 +55,7 @@ func main() {
 		fmt.Println("Read at:", m.Watermark().Format(time.UnixDate))
 	})
 
-	fmt.Println("Serving messenger bot on localhost:8080")
+	fmt.Printf("Serving messenger bot on localhost:%d\n", *port)
 
-	http.ListenAndServe("localhost:8080", client.Handler())
+	http.ListenAndServe(fmt.Sprintf("localhost:%d", *port), client.Handler())
 }

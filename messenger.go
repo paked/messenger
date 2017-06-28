@@ -2,10 +2,13 @@ package messenger
 
 import (
 	"bytes"
+	"crypto/hmac"
+	"crypto/sha1"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -24,6 +27,9 @@ type Options struct {
 	// Verify sets whether or not to be in the "verify" mode. Used for
 	// verifying webhooks on the Facebook Developer Portal.
 	Verify bool
+	// AppSecret is the app secret from the Facebook Developer Portal. Used when
+	// in the "verify" mode.
+	AppSecret string
 	// VerifyToken is the token to be used when verifying the webhook. Is set
 	// when the webhook is created.
 	VerifyToken string
@@ -64,6 +70,8 @@ type Messenger struct {
 	referralHandlers []ReferralHandler
 	token            string
 	verifyHandler    func(http.ResponseWriter, *http.Request)
+	verify           bool
+	appSecret        string
 }
 
 // New creates a new Messenger. You pass in Options in order to affect settings.
@@ -73,8 +81,10 @@ func New(mo Options) *Messenger {
 	}
 
 	m := &Messenger{
-		mux:   mo.Mux,
-		token: mo.Token,
+		mux:       mo.Mux,
+		token:     mo.Token,
+		verify:    mo.Verify,
+		appSecret: mo.AppSecret,
 	}
 
 	if mo.WebhookURL == "" {
@@ -240,7 +250,11 @@ func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 
 	var rec Receive
 
-	err := json.NewDecoder(r.Body).Decode(&rec)
+	// consume a *copy* of the request body
+	body, _ := ioutil.ReadAll(r.Body)
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+	err := json.Unmarshal(body, &rec)
 	if err != nil {
 		fmt.Println("could not decode response:", err)
 		fmt.Fprintln(w, `{status: 'not ok'}`)
@@ -251,9 +265,53 @@ func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Object is not page, undefined behaviour. Got", rec.Object)
 	}
 
+	if m.verify {
+		if err := m.checkIntegrity(r); err != nil {
+			fmt.Println("could not verify request:", err)
+			fmt.Fprintln(w, `{status: 'not ok'}`)
+			return
+		}
+	}
+
 	m.dispatch(rec)
 
 	fmt.Fprintln(w, `{status: 'ok'}`)
+}
+
+// checkIntegrity checks the integrity of the requests received
+func (m *Messenger) checkIntegrity(r *http.Request) error {
+	if m.appSecret == "" {
+		return fmt.Errorf("missing app secret")
+	}
+
+	sigHeader := "X-Hub-Signature"
+	sig := strings.SplitN(r.Header.Get(sigHeader), "=", 2)
+	if len(sig) == 1 {
+		if sig[0] == "" {
+			return fmt.Errorf("missing %s header", sigHeader)
+		}
+		return fmt.Errorf("malformed %s header: %v", sigHeader, strings.Join(sig, "="))
+	}
+
+	checkSHA1 := func(body []byte, hash string) error {
+		mac := hmac.New(sha1.New, []byte(m.appSecret))
+		if mac.Write(body); fmt.Sprintf("%x", mac.Sum(nil)) != hash {
+			return fmt.Errorf("invalid signature: %s", hash)
+		}
+		return nil
+	}
+
+	body, _ := ioutil.ReadAll(r.Body)
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+	sigEnc := strings.ToLower(sig[0])
+	sigHash := strings.ToLower(sig[1])
+	switch sigEnc {
+	case "sha1":
+		return checkSHA1(body, sigHash)
+	default:
+		return fmt.Errorf("unknown %s header encoding, expected sha1: %s", sigHeader, sig[0])
+	}
 }
 
 // dispatch triggers all of the relevant handlers when a webhook event is received.
