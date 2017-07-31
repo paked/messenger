@@ -7,8 +7,11 @@ import (
 	"image"
 	"image/jpeg"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
+	"strings"
 )
 
 // AttachmentType is attachment type.
@@ -119,32 +122,57 @@ func (r *Response) Attachment(dataType AttachmentType, url string) error {
 	return r.DispatchMessage(&m)
 }
 
+// copied from multipart package
+var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
+
+// copied from multipart package
+func escapeQuotes(s string) string {
+	return quoteEscaper.Replace(s)
+}
+
+// copied from multipart package with slight changes due to fixed content-type there
+func createFormFile(filename string, w *multipart.Writer, contentType string) (io.Writer, error) {
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition",
+		fmt.Sprintf(`form-data; name="filedata"; filename="%s"`,
+			escapeQuotes(filename)))
+	h.Set("Content-Type", contentType)
+	return w.CreatePart(h)
+}
+
 // AttachmentData sends an image, sound, video or a regular file to a chat via an io.Reader.
 func (r *Response) AttachmentData(dataType AttachmentType, filename string, filedata io.Reader) error {
-	var b bytes.Buffer
-	w := multipart.NewWriter(&b)
 
-	data, err := w.CreateFormFile("filedata", filename)
+	filedataBytes, err := ioutil.ReadAll(filedata)
+	if err != nil {
+		return err
+	}
+	contentType := http.DetectContentType(filedataBytes[:512])
+	fmt.Println("Content-type detected:", contentType)
+
+	var body bytes.Buffer
+	multipartWriter := multipart.NewWriter(&body)
+	data, err := createFormFile(filename, multipartWriter, contentType)
 	if err != nil {
 		return err
 	}
 
-	_, err = io.Copy(data, filedata)
+	_, err = bytes.NewBuffer(filedataBytes).WriteTo(data)
 	if err != nil {
 		return err
 	}
 
-	w.WriteField("recipient", fmt.Sprintf(`{"id":"%v"}`, r.to.ID))
-	w.WriteField("message", fmt.Sprintf(`{"attachment":{"type":"%v", "payload":{}}}`, dataType))
+	multipartWriter.WriteField("recipient", fmt.Sprintf(`{"id":"%v"}`, r.to.ID))
+	multipartWriter.WriteField("message", fmt.Sprintf(`{"attachment":{"type":"%v", "payload":{}}}`, dataType))
 
-	req, err := http.NewRequest("POST", SendMessageURL, &b)
+	req, err := http.NewRequest("POST", SendMessageURL, &body)
 	if err != nil {
 		return err
 	}
 
 	req.URL.RawQuery = "access_token=" + r.token
 
-	req.Header.Set("Content-Type", w.FormDataContentType())
+	req.Header.Set("Content-Type", multipartWriter.FormDataContentType())
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
