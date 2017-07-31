@@ -50,9 +50,10 @@ func checkFacebookError(r io.Reader) error {
 	err = json.NewDecoder(r).Decode(&qr)
 	if qr.Error != nil {
 		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
+		return err
 	}
 
-	return err
+	return nil
 }
 
 // Response is used for responding to events with messages.
@@ -151,9 +152,7 @@ func (r *Response) AttachmentData(dataType AttachmentType, filename string, file
 		return err
 	}
 
-	var res bytes.Buffer
-	res.ReadFrom(resp.Body)
-	return nil
+	return checkFacebookError(resp.Body)
 }
 
 // ButtonTemplate sends a message with the main contents being button elements
