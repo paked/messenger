@@ -16,10 +16,11 @@ import (
 
 // AttachmentType is attachment type.
 type AttachmentType string
+type MessagingType string
 
 const (
 	// SendMessageURL is API endpoint for sending messages.
-	SendMessageURL = "https://graph.facebook.com/v2.6/me/messages"
+	SendMessageURL = "https://graph.facebook.com/v2.11/me/messages"
 
 	// ImageAttachment is image attachment type.
 	ImageAttachment AttachmentType = "image"
@@ -29,6 +30,15 @@ const (
 	VideoAttachment AttachmentType = "video"
 	// FileAttachment is file attachment type.
 	FileAttachment AttachmentType = "file"
+
+	// ResponseType is response messaging type
+	ResponseType MessagingType = "RESPONSE"
+	// UpdateType is update messaging type
+	UpdateType MessagingType = "UPDATE"
+	// MessageTagType is message_tag messaging type
+	MessageTagType MessagingType = "MESSAGE_TAG"
+	// NonPromotionalSubscriptionType is NON_PROMOTIONAL_SUBSCRIPTION messaging type
+	NonPromotionalSubscriptionType MessagingType = "NON_PROMOTIONAL_SUBSCRIPTION"
 )
 
 // QueryResponse is the response sent back by Facebook when setting up things
@@ -66,31 +76,47 @@ type Response struct {
 }
 
 // Text sends a textual message.
-func (r *Response) Text(message string) error {
-	return r.TextWithReplies(message, nil)
+func (r *Response) Text(message string, messagingType MessagingType, tags ...string) error {
+	return r.TextWithReplies(message, nil, messagingType, tags...)
 }
 
 // TextWithReplies sends a textual message with some replies
-func (r *Response) TextWithReplies(message string, replies []QuickReply) error {
+// messagingType should be one of the following: "RESPONSE","UPDATE","MESSAGE_TAG","NON_PROMOTIONAL_SUBSCRIPTION"
+// only supply tags when messagingType == "MESSAGE_TAG" (see https://developers.facebook.com/docs/messenger-platform/send-messages#messaging_types for more)
+func (r *Response) TextWithReplies(message string, replies []QuickReply, messagingType MessagingType, tags ...string) error {
+	var tag string
+	if len(tags) > 0 {
+		tag = tags[0]
+	}
+
 	m := SendMessage{
-		Recipient: r.to,
+		MessagingType: messagingType,
+		Recipient:     r.to,
 		Message: MessageData{
 			Text:         message,
 			Attachment:   nil,
 			QuickReplies: replies,
 		},
+		Tag: tag,
 	}
 	return r.DispatchMessage(&m)
 }
 
 // AttachmentWithReplies sends a attachment message with some replies
-func (r *Response) AttachmentWithReplies(attachment *StructuredMessageAttachment, replies []QuickReply) error {
+func (r *Response) AttachmentWithReplies(attachment *StructuredMessageAttachment, replies []QuickReply, messagingType MessagingType, tags ...string) error {
+	var tag string
+	if len(tags) > 0 {
+		tag = tags[0]
+	}
+
 	m := SendMessage{
-		Recipient: r.to,
+		MessagingType: messagingType,
+		Recipient:     r.to,
 		Message: MessageData{
 			Attachment:   attachment,
 			QuickReplies: replies,
 		},
+		Tag: tag,
 	}
 	return r.DispatchMessage(&m)
 }
@@ -107,9 +133,15 @@ func (r *Response) Image(im image.Image) error {
 }
 
 // Attachment sends an image, sound, video or a regular file to a chat.
-func (r *Response) Attachment(dataType AttachmentType, url string) error {
+func (r *Response) Attachment(dataType AttachmentType, url string, messagingType MessagingType, tags ...string) error {
+	var tag string
+	if len(tags) > 0 {
+		tag = tags[0]
+	}
+
 	m := SendStructuredMessage{
-		Recipient: r.to,
+		MessagingType: messagingType,
+		Recipient:     r.to,
 		Message: StructuredMessageData{
 			Attachment: StructuredMessageAttachment{
 				Type: dataType,
@@ -118,6 +150,7 @@ func (r *Response) Attachment(dataType AttachmentType, url string) error {
 				},
 			},
 		},
+		Tag: tag,
 	}
 	return r.DispatchMessage(&m)
 }
@@ -184,9 +217,15 @@ func (r *Response) AttachmentData(dataType AttachmentType, filename string, file
 }
 
 // ButtonTemplate sends a message with the main contents being button elements
-func (r *Response) ButtonTemplate(text string, buttons *[]StructuredMessageButton) error {
+func (r *Response) ButtonTemplate(text string, buttons *[]StructuredMessageButton, messagingType MessagingType, tags ...string) error {
+	var tag string
+	if len(tags) > 0 {
+		tag = tags[0]
+	}
+
 	m := SendStructuredMessage{
-		Recipient: r.to,
+		MessagingType: messagingType,
+		Recipient:     r.to,
 		Message: StructuredMessageData{
 			Attachment: StructuredMessageAttachment{
 				Type: "template",
@@ -198,15 +237,22 @@ func (r *Response) ButtonTemplate(text string, buttons *[]StructuredMessageButto
 				},
 			},
 		},
+		Tag: tag,
 	}
 
 	return r.DispatchMessage(&m)
 }
 
 // GenericTemplate is a message which allows for structural elements to be sent
-func (r *Response) GenericTemplate(elements *[]StructuredMessageElement) error {
+func (r *Response) GenericTemplate(elements *[]StructuredMessageElement, messagingType MessagingType, tags ...string) error {
+	var tag string
+	if len(tags) > 0 {
+		tag = tags[0]
+	}
+
 	m := SendStructuredMessage{
-		Recipient: r.to,
+		MessagingType: messagingType,
+		Recipient:     r.to,
 		Message: StructuredMessageData{
 			Attachment: StructuredMessageAttachment{
 				Type: "template",
@@ -217,6 +263,7 @@ func (r *Response) GenericTemplate(elements *[]StructuredMessageElement) error {
 				},
 			},
 		},
+		Tag: tag,
 	}
 	return r.DispatchMessage(&m)
 }
@@ -258,8 +305,10 @@ func (r *Response) DispatchMessage(m interface{}) error {
 
 // SendMessage is the information sent in an API request to Facebook.
 type SendMessage struct {
-	Recipient Recipient   `json:"recipient"`
-	Message   MessageData `json:"message"`
+	MessagingType MessagingType `json:"messaging_type"`
+	Recipient     Recipient     `json:"recipient"`
+	Message       MessageData   `json:"message"`
+	Tag           string        `json:"tag,omitempty"`
 }
 
 // MessageData is a message consisting of text or an attachment, with an additional selection of optional quick replies.
@@ -271,8 +320,10 @@ type MessageData struct {
 
 // SendStructuredMessage is a structured message template.
 type SendStructuredMessage struct {
-	Recipient Recipient             `json:"recipient"`
-	Message   StructuredMessageData `json:"message"`
+	MessagingType MessagingType         `json:"messaging_type"`
+	Recipient     Recipient             `json:"recipient"`
+	Message       StructuredMessageData `json:"message"`
+	Tag           string                `json:"tag,omitempty"`
 }
 
 // StructuredMessageData is an attachment sent with a structured message.

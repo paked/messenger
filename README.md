@@ -15,6 +15,7 @@ This is a Go library for making bots to be used on Facebook messenger. It is bui
 `paked/messenger` is a pretty stable library however, changes will be made which might break backwards compatibility. For the convenience of its users, these are documented here.
 
 
+- 06/2/18: Added messaging_type field for message send API request as it is required by FB
 - [23/1/17](https://github.com/paked/messenger/commit/1145fe35249f8ce14d3c0a52544e4a4babdc15a4): Updating timezone type to `float64` in profile struct
 - [12/9/16](https://github.com/paked/messenger/commit/47f193fc858e2d710c061e88b12dbd804a399e57): Removing unused parameter `text string` from function `(r *Response) GenericTemplate`.
 - [20/5/16](https://github.com/paked/messenger/commit/1dc4bcc67dec50e2f58436ffbc7d61ca9da5b943): Leaving the `WebhookURL` field blank in `Options` will yield a URL of "/" instead of a panic.

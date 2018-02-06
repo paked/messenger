@@ -384,37 +384,37 @@ func (m *Messenger) Response(to int64) *Response {
 }
 
 // Send will send a textual message to a user. This user must have previously initiated a conversation with the bot.
-func (m *Messenger) Send(to Recipient, message string) error {
-	return m.SendWithReplies(to, message, nil)
+func (m *Messenger) Send(to Recipient, message string, messagingType MessagingType, tags ...string) error {
+	return m.SendWithReplies(to, message, nil, messagingType, tags...)
 }
 
 // SendGeneralMessage will send the GenericTemplate message
-func (m *Messenger) SendGeneralMessage(to Recipient, elements *[]StructuredMessageElement) error {
+func (m *Messenger) SendGeneralMessage(to Recipient, elements *[]StructuredMessageElement, messagingType MessagingType, tags ...string) error {
 	r := &Response{
 		token: m.token,
 		to:    to,
 	}
-	return r.GenericTemplate(elements)
+	return r.GenericTemplate(elements, messagingType, tags...)
 }
 
 // SendWithReplies sends a textual message to a user, but gives them the option of numerous quick response options.
-func (m *Messenger) SendWithReplies(to Recipient, message string, replies []QuickReply) error {
+func (m *Messenger) SendWithReplies(to Recipient, message string, replies []QuickReply, messagingType MessagingType, tags ...string) error {
 	response := &Response{
 		token: m.token,
 		to:    to,
 	}
 
-	return response.TextWithReplies(message, replies)
+	return response.TextWithReplies(message, replies, messagingType, tags...)
 }
 
 // Attachment sends an image, sound, video or a regular file to a given recipient.
-func (m *Messenger) Attachment(to Recipient, dataType AttachmentType, url string) error {
+func (m *Messenger) Attachment(to Recipient, dataType AttachmentType, url string, messagingType MessagingType, tags ...string) error {
 	response := &Response{
 		token: m.token,
 		to:    to,
 	}
 
-	return response.Attachment(dataType, url)
+	return response.Attachment(dataType, url, messagingType, tags...)
 }
 
 // classify determines what type of message a webhook event is.
