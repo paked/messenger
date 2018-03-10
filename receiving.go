@@ -43,6 +43,8 @@ type MessageInfo struct {
 	OptIn *OptIn `json:"optin"`
 
 	ReferralMessage *ReferralMessage `json:"referral"`
+
+	AccountLinking *AccountLinking `json:"account_linking"`
 }
 
 type OptIn struct {

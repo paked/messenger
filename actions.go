@@ -20,4 +20,7 @@ const (
 	OptInAction
 	// ReferralAction represents ?ref parameter in m.me URLs
 	ReferralAction
+	// AccountLinkingAction means that the event concerns changes in account linking
+	// status.
+	AccountLinkingAction
 )
