@@ -1,0 +1,9 @@
+language: go
+go:
+  - 1.10.x
+  - master
+
+go_import_path: github.com/paked/messenger
+
+install: go get -t ./...
+script: go test -v ./...

@@ -1,4 +1,4 @@
-# Messenger [![GoDoc](https://godoc.org/github.com/paked/messenger?status.svg)](https://godoc.org/github.com/paked/messenger)
+# Messenger [![GoDoc](https://godoc.org/github.com/paked/messenger?status.svg)](https://godoc.org/github.com/paked/messenger) [![Build Status](https://travis-ci.org/paked/messenger.svg?branch=master)](https://travis-ci.org/paked/messenger)
 
 This is a Go library for making bots to be used on Facebook messenger. It is built on the [Messenger Platform](https://developers.facebook.com/docs/messenger-platform). One of the main goals of the project is to implement it in an idiomatic and easy to use fashion.
 
@@ -19,7 +19,7 @@ This is a Go library for making bots to be used on Facebook messenger. It is bui
 - [23/1/17](https://github.com/paked/messenger/commit/1145fe35249f8ce14d3c0a52544e4a4babdc15a4): Updating timezone type to `float64` in profile struct
 - [12/9/16](https://github.com/paked/messenger/commit/47f193fc858e2d710c061e88b12dbd804a399e57): Removing unused parameter `text string` from function `(r *Response) GenericTemplate`.
 - [20/5/16](https://github.com/paked/messenger/commit/1dc4bcc67dec50e2f58436ffbc7d61ca9da5b943): Leaving the `WebhookURL` field blank in `Options` will yield a URL of "/" instead of a panic.
-- [4/5/16](https://github.com/paked/messenger/commit/eb0e72a5dcd3bfaffcfe88dced6d6ac5247f9da1): The URL to use for the webhook is changable in the `Options` struct. 
+- [4/5/16](https://github.com/paked/messenger/commit/eb0e72a5dcd3bfaffcfe88dced6d6ac5247f9da1): The URL to use for the webhook is changable in the `Options` struct.
 
 ## Inspiration
 
