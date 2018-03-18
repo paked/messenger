@@ -1,29 +1,35 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"time"
 
-	"github.com/paked/configure"
 	"github.com/paked/messenger"
 )
 
 var (
-	conf        = configure.New()
-	verifyToken = conf.String("verify-token", "mad-skrilla", "The token used to verify facebook")
-	verify      = conf.Bool("should-verify", false, "Whether or not the app should verify itself")
-	pageToken   = conf.String("page-token", "not skrilla", "The token that is used to verify the page on facebook")
-	appSecret   = conf.String("app-secret", "", "The app secret from the facebook developer portal")
-	port        = conf.Int("port", 8080, "The port used to serve the messenger bot")
+	verifyToken = flag.String("verify-token", "mad-skrilla", "The token used to verify facebook (required)")
+	verify      = flag.Bool("should-verify", false, "Whether or not the app should verify itself")
+	pageToken   = flag.String("page-token", "not skrilla", "The token that is used to verify the page on facebook")
+	appSecret   = flag.String("app-secret", "", "The app secret from the facebook developer portal (required)")
+	host        = flag.String("host", "localhost", "The host used to serve the messenger bot")
+	port        = flag.Int("port", 8080, "The port used to serve the messenger bot")
 )
 
 func main() {
-	conf.Use(configure.NewFlag())
-	conf.Use(configure.NewEnvironment())
-	conf.Use(configure.NewJSONFromFile("config.json"))
+	flag.Parse()
 
-	conf.Parse()
+	if *verifyToken == "" || *appSecret == "" || *pageToken == "" {
+		fmt.Println("missing arguments")
+		fmt.Println()
+		flag.Usage()
+
+		os.Exit(-1)
+	}
 
 	// Create a new messenger client
 	client := messenger.New(messenger.Options{
@@ -55,7 +61,7 @@ func main() {
 		fmt.Println("Read at:", m.Watermark().Format(time.UnixDate))
 	})
 
-	fmt.Printf("Serving messenger bot on localhost:%d\n", *port)
-
-	http.ListenAndServe(fmt.Sprintf("localhost:%d", *port), client.Handler())
+	addr := fmt.Sprintf("%s:%d", *host, *port)
+	log.Println("Serving messenger bot on", addr)
+	log.Fatal(http.ListenAndServe(addr, client.Handler()))
 }
