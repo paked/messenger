@@ -59,19 +59,24 @@ type OptInHandler func(OptIn, *Response)
 // ReferralHandler is a handler used postback callbacks.
 type ReferralHandler func(ReferralMessage, *Response)
 
+// AccountLinkingHandler is a handler used to react to an account
+// being linked or unlinked.
+type AccountLinkingHandler func(AccountLinking, *Response)
+
 // Messenger is the client which manages communication with the Messenger Platform API.
 type Messenger struct {
-	mux              *http.ServeMux
-	messageHandlers  []MessageHandler
-	deliveryHandlers []DeliveryHandler
-	readHandlers     []ReadHandler
-	postBackHandlers []PostBackHandler
-	optInHandlers    []OptInHandler
-	referralHandlers []ReferralHandler
-	token            string
-	verifyHandler    func(http.ResponseWriter, *http.Request)
-	verify           bool
-	appSecret        string
+	mux                    *http.ServeMux
+	messageHandlers        []MessageHandler
+	deliveryHandlers       []DeliveryHandler
+	readHandlers           []ReadHandler
+	postBackHandlers       []PostBackHandler
+	optInHandlers          []OptInHandler
+	referralHandlers       []ReferralHandler
+	accountLinkingHandlers []AccountLinkingHandler
+	token                  string
+	verifyHandler          func(http.ResponseWriter, *http.Request)
+	verify                 bool
+	appSecret              string
 }
 
 // New creates a new Messenger. You pass in Options in order to affect settings.
@@ -129,6 +134,11 @@ func (m *Messenger) HandlePostBack(f PostBackHandler) {
 // HandleReferral adds a new ReferralHandler to the Messenger
 func (m *Messenger) HandleReferral(f ReferralHandler) {
 	m.referralHandlers = append(m.referralHandlers, f)
+}
+
+// HandleAccountLinking adds a new AccountLinkingHandler to the Messenger
+func (m *Messenger) HandleAccountLinking(f AccountLinkingHandler) {
+	m.accountLinkingHandlers = append(m.accountLinkingHandlers, f)
 }
 
 // Handler returns the Messenger in HTTP client form.
@@ -370,6 +380,14 @@ func (m *Messenger) dispatch(r Receive) {
 					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
 					f(message, resp)
 				}
+			case AccountLinkingAction:
+				for _, f := range m.accountLinkingHandlers {
+					message := *info.AccountLinking
+					message.Sender = info.Sender
+					message.Recipient = info.Recipient
+					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
+					f(message, resp)
+				}
 			}
 		}
 	}
@@ -431,6 +449,8 @@ func (m *Messenger) classify(info MessageInfo, e Entry) Action {
 		return OptInAction
 	} else if info.ReferralMessage != nil {
 		return ReferralAction
+	} else if info.AccountLinking != nil {
+		return AccountLinkingAction
 	}
 	return UnknownAction
 }

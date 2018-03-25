@@ -60,6 +60,19 @@ type PostBack struct {
 	Referral Referral `json:"referral"`
 }
 
+type AccountLinking struct {
+	// Sender is who the message was sent from.
+	Sender Sender `json:"-"`
+	// Recipient is who the message was sent to.
+	Recipient Recipient `json:"-"`
+	// Time is when the message was sent.
+	Time time.Time `json:"-"`
+	// Status represents the new account linking status.
+	Status string `json:"status"`
+	// AuthorizationCode is a pass-through code set during the linking process.
+	AuthorizationCode string `json:"authorization_code"`
+}
+
 // Watermark is the RawWatermark timestamp rendered as a time.Time.
 func (d Delivery) Watermark() time.Time {
 	return time.Unix(d.RawWatermark/int64(time.Microsecond), 0)
