@@ -23,6 +23,39 @@ type Message struct {
 	Attachments []Attachment `json:"attachments"`
 	// Selected quick reply
 	QuickReply *QuickReply `json:"quick_reply,omitempty"`
+	// Entities for NLP
+	// https://developers.facebook.com/docs/messenger-platform/built-in-nlp/
+	Nlp map[string]Entity `json:"nlp"`
+}
+
+// Entity blah blah
+type Entity struct {
+	Email []Email `json:"email"`
+	URL   []URL   `json:"url"`
+}
+
+// URL Entity
+type URL struct {
+	Domain string `json:"domain"`
+	Value  string `json:"value"`
+	Confidence
+}
+
+// URLValue deeper entity semantics
+type URLValue struct {
+	Domain string `json:"domain"`
+	Value  string `json:"value"`
+}
+
+// Email entity
+type Email struct {
+	Value string `json:"value"`
+	Confidence
+}
+
+// Confidence is how close to 1 the model thinks it is accurate on match
+type Confidence struct {
+	Confidence float64 `json:"confidence"`
 }
 
 // Delivery represents a the event fired when Facebook delivers a message to the
@@ -81,4 +114,9 @@ func (d Delivery) Watermark() time.Time {
 // Watermark is the RawWatermark timestamp rendered as a time.Time.
 func (r Read) Watermark() time.Time {
 	return time.Unix(r.RawWatermark/int64(time.Microsecond), 0)
+}
+
+// Entities returns NLP entities matched from `Entity` struct
+func (m Message) Entities() Entity {
+	return m.Nlp["entities"]
 }
