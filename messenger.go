@@ -2,6 +2,7 @@ package messenger
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/json"
@@ -42,29 +43,30 @@ type Options struct {
 }
 
 // MessageHandler is a handler used for responding to a message containing text.
-type MessageHandler func(Message, *Response)
+type MessageHandler func(context.Context, Message, *Response)
 
 // DeliveryHandler is a handler used for responding to a delivery receipt.
-type DeliveryHandler func(Delivery, *Response)
+type DeliveryHandler func(context.Context, Delivery, *Response)
 
 // ReadHandler is a handler used for responding to a read receipt.
-type ReadHandler func(Read, *Response)
+type ReadHandler func(context.Context, Read, *Response)
 
 // PostBackHandler is a handler used postback callbacks.
-type PostBackHandler func(PostBack, *Response)
+type PostBackHandler func(context.Context, PostBack, *Response)
 
 // OptInHandler is a handler used to handle opt-ins.
-type OptInHandler func(OptIn, *Response)
+type OptInHandler func(context.Context, OptIn, *Response)
 
 // ReferralHandler is a handler used postback callbacks.
-type ReferralHandler func(ReferralMessage, *Response)
+type ReferralHandler func(context.Context, ReferralMessage, *Response)
 
 // AccountLinkingHandler is a handler used to react to an account
 // being linked or unlinked.
-type AccountLinkingHandler func(AccountLinking, *Response)
+type AccountLinkingHandler func(context.Context, AccountLinking, *Response)
 
 // Messenger is the client which manages communication with the Messenger Platform API.
 type Messenger struct {
+	Client                 *http.Client
 	mux                    *http.ServeMux
 	messageHandlers        []MessageHandler
 	deliveryHandlers       []DeliveryHandler
@@ -97,7 +99,7 @@ func New(mo Options) *Messenger {
 	}
 
 	m.verifyHandler = newVerifyHandler(mo.VerifyToken)
-	m.mux.HandleFunc(mo.WebhookURL, m.handle)
+	m.mux.HandleFunc(mo.WebhookURL, m.Handle)
 
 	return m
 }
@@ -158,8 +160,7 @@ func (m *Messenger) ProfileByID(id int64) (Profile, error) {
 
 	req.URL.RawQuery = "fields=" + ProfileFields + "&access_token=" + m.token
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := m.Client.Do(req)
 	if err != nil {
 		return p, err
 	}
@@ -208,9 +209,7 @@ func (m *Messenger) GreetingSetting(text string) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = "access_token=" + m.token
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := m.Client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -240,9 +239,7 @@ func (m *Messenger) CallToActionsSetting(state string, actions []CallToActionsIt
 	req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = "access_token=" + m.token
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := m.Client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -251,14 +248,16 @@ func (m *Messenger) CallToActionsSetting(state string, actions []CallToActionsIt
 	return checkFacebookError(resp.Body)
 }
 
-// handle is the internal HTTP handler for the webhooks.
-func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
+// Handle is the internal HTTP handler for the webhooks.
+func (m *Messenger) Handle(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		m.verifyHandler(w, r)
 		return
 	}
 
 	var rec Receive
+
+	ctx := r.Context()
 
 	// consume a *copy* of the request body
 	body, _ := ioutil.ReadAll(r.Body)
@@ -283,7 +282,7 @@ func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	m.dispatch(rec)
+	m.dispatch(ctx, rec)
 
 	fmt.Fprintln(w, `{status: 'ok'}`)
 }
@@ -325,7 +324,7 @@ func (m *Messenger) checkIntegrity(r *http.Request) error {
 }
 
 // dispatch triggers all of the relevant handlers when a webhook event is received.
-func (m *Messenger) dispatch(r Receive) {
+func (m *Messenger) dispatch(ctx context.Context, r Receive) {
 	for _, entry := range r.Entry {
 		for _, info := range entry.Messaging {
 			a := m.classify(info, entry)
@@ -335,8 +334,9 @@ func (m *Messenger) dispatch(r Receive) {
 			}
 
 			resp := &Response{
-				to:    Recipient{info.Sender.ID},
-				token: m.token,
+				to:     Recipient{info.Sender.ID},
+				token:  m.token,
+				client: m.Client,
 			}
 
 			switch a {
@@ -346,15 +346,15 @@ func (m *Messenger) dispatch(r Receive) {
 					message.Sender = info.Sender
 					message.Recipient = info.Recipient
 					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
-					f(message, resp)
+					f(ctx, message, resp)
 				}
 			case DeliveryAction:
 				for _, f := range m.deliveryHandlers {
-					f(*info.Delivery, resp)
+					f(ctx, *info.Delivery, resp)
 				}
 			case ReadAction:
 				for _, f := range m.readHandlers {
-					f(*info.Read, resp)
+					f(ctx, *info.Read, resp)
 				}
 			case PostBackAction:
 				for _, f := range m.postBackHandlers {
@@ -362,7 +362,7 @@ func (m *Messenger) dispatch(r Receive) {
 					message.Sender = info.Sender
 					message.Recipient = info.Recipient
 					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
-					f(message, resp)
+					f(ctx, message, resp)
 				}
 			case OptInAction:
 				for _, f := range m.optInHandlers {
@@ -370,7 +370,7 @@ func (m *Messenger) dispatch(r Receive) {
 					message.Sender = info.Sender
 					message.Recipient = info.Recipient
 					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
-					f(message, resp)
+					f(ctx, message, resp)
 				}
 			case ReferralAction:
 				for _, f := range m.referralHandlers {
@@ -378,7 +378,7 @@ func (m *Messenger) dispatch(r Receive) {
 					message.Sender = info.Sender
 					message.Recipient = info.Recipient
 					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
-					f(message, resp)
+					f(ctx, message, resp)
 				}
 			case AccountLinkingAction:
 				for _, f := range m.accountLinkingHandlers {
@@ -386,7 +386,7 @@ func (m *Messenger) dispatch(r Receive) {
 					message.Sender = info.Sender
 					message.Recipient = info.Recipient
 					message.Time = time.Unix(info.Timestamp/int64(time.Microsecond), 0)
-					f(message, resp)
+					f(ctx, message, resp)
 				}
 			}
 		}

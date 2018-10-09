@@ -1,6 +1,9 @@
 package messenger
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // Message represents a Facebook messenge message.
 type Message struct {
@@ -25,37 +28,7 @@ type Message struct {
 	QuickReply *QuickReply `json:"quick_reply,omitempty"`
 	// Entities for NLP
 	// https://developers.facebook.com/docs/messenger-platform/built-in-nlp/
-	Nlp map[string]Entity `json:"nlp"`
-}
-
-// Entity blah blah
-type Entity struct {
-	Email []Email `json:"email"`
-	URL   []URL   `json:"url"`
-}
-
-// URL Entity
-type URL struct {
-	Domain string `json:"domain"`
-	Value  string `json:"value"`
-	Confidence
-}
-
-// URLValue deeper entity semantics
-type URLValue struct {
-	Domain string `json:"domain"`
-	Value  string `json:"value"`
-}
-
-// Email entity
-type Email struct {
-	Value string `json:"value"`
-	Confidence
-}
-
-// Confidence is how close to 1 the model thinks it is accurate on match
-type Confidence struct {
-	Confidence float64 `json:"confidence"`
+	NLP json.RawMessage `json:"nlp"`
 }
 
 // Delivery represents a the event fired when Facebook delivers a message to the
@@ -116,7 +89,8 @@ func (r Read) Watermark() time.Time {
 	return time.Unix(r.RawWatermark/int64(time.Microsecond), 0)
 }
 
-// Entities returns NLP entities matched from `Entity` struct
-func (m Message) Entities() Entity {
-	return m.Nlp["entities"]
+// GetNLP simply unmarshals the NLP entities to the given struct and returns
+// an error if it's not possible
+func (m *Message) GetNLP(i interface{}) error {
+	return json.Unmarshal(m.NLP, &i)
 }

@@ -71,8 +71,9 @@ func checkFacebookError(r io.Reader) error {
 
 // Response is used for responding to events with messages.
 type Response struct {
-	token string
-	to    Recipient
+	client *http.Client
+	token  string
+	to     Recipient
 }
 
 // Text sends a textual message.
@@ -207,8 +208,7 @@ func (r *Response) AttachmentData(dataType AttachmentType, filename string, file
 
 	req.Header.Set("Content-Type", multipartWriter.FormDataContentType())
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := r.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -292,7 +292,7 @@ func (r *Response) DispatchMessage(m interface{}) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = "access_token=" + r.token
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := r.client.Do(req)
 	if err != nil {
 		return err
 	}
