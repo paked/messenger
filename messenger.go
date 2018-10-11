@@ -40,45 +40,18 @@ type Options struct {
 	WebhookURL string
 	// Mux is shared mux between several Messenger objects
 	Mux *http.ServeMux
+	// Client is to allow use of custom clients like default or Google App Engine urlfetcher
+	Client *http.Client
 }
-
-// MessageHandler is a handler used for responding to a message containing text.
-type MessageHandler func(context.Context, Message, *Response)
-
-// DeliveryHandler is a handler used for responding to a delivery receipt.
-type DeliveryHandler func(context.Context, Delivery, *Response)
-
-// ReadHandler is a handler used for responding to a read receipt.
-type ReadHandler func(context.Context, Read, *Response)
-
-// PostBackHandler is a handler used postback callbacks.
-type PostBackHandler func(context.Context, PostBack, *Response)
-
-// OptInHandler is a handler used to handle opt-ins.
-type OptInHandler func(context.Context, OptIn, *Response)
-
-// ReferralHandler is a handler used postback callbacks.
-type ReferralHandler func(context.Context, ReferralMessage, *Response)
-
-// AccountLinkingHandler is a handler used to react to an account
-// being linked or unlinked.
-type AccountLinkingHandler func(context.Context, AccountLinking, *Response)
 
 // Messenger is the client which manages communication with the Messenger Platform API.
 type Messenger struct {
-	Client                 *http.Client
-	mux                    *http.ServeMux
-	messageHandlers        []MessageHandler
-	deliveryHandlers       []DeliveryHandler
-	readHandlers           []ReadHandler
-	postBackHandlers       []PostBackHandler
-	optInHandlers          []OptInHandler
-	referralHandlers       []ReferralHandler
-	accountLinkingHandlers []AccountLinkingHandler
-	token                  string
-	verifyHandler          func(http.ResponseWriter, *http.Request)
-	verify                 bool
-	appSecret              string
+	client        *http.Client
+	mux           *http.ServeMux
+	token         string
+	verifyHandler func(http.ResponseWriter, *http.Request)
+	verify        bool
+	appSecret     string
 }
 
 // New creates a new Messenger. You pass in Options in order to affect settings.
@@ -87,7 +60,12 @@ func New(mo Options) *Messenger {
 		mo.Mux = http.NewServeMux()
 	}
 
+	if mo.Client == nil {
+		mo.Client = http.DefaultClient
+	}
+
 	m := &Messenger{
+		client:    mo.Client,
 		mux:       mo.Mux,
 		token:     mo.Token,
 		verify:    mo.Verify,
@@ -102,45 +80,6 @@ func New(mo Options) *Messenger {
 	m.mux.HandleFunc(mo.WebhookURL, m.Handle)
 
 	return m
-}
-
-// HandleMessage adds a new MessageHandler to the Messenger which will be triggered
-// when a message is received by the client.
-func (m *Messenger) HandleMessage(f MessageHandler) {
-	m.messageHandlers = append(m.messageHandlers, f)
-}
-
-// HandleDelivery adds a new DeliveryHandler to the Messenger which will be triggered
-// when a previously sent message is delivered to the recipient.
-func (m *Messenger) HandleDelivery(f DeliveryHandler) {
-	m.deliveryHandlers = append(m.deliveryHandlers, f)
-}
-
-// HandleOptIn adds a new OptInHandler to the Messenger which will be triggered
-// once a user opts in to communicate with the bot.
-func (m *Messenger) HandleOptIn(f OptInHandler) {
-	m.optInHandlers = append(m.optInHandlers, f)
-}
-
-// HandleRead adds a new DeliveryHandler to the Messenger which will be triggered
-// when a previously sent message is read by the recipient.
-func (m *Messenger) HandleRead(f ReadHandler) {
-	m.readHandlers = append(m.readHandlers, f)
-}
-
-// HandlePostBack adds a new PostBackHandler to the Messenger
-func (m *Messenger) HandlePostBack(f PostBackHandler) {
-	m.postBackHandlers = append(m.postBackHandlers, f)
-}
-
-// HandleReferral adds a new ReferralHandler to the Messenger
-func (m *Messenger) HandleReferral(f ReferralHandler) {
-	m.referralHandlers = append(m.referralHandlers, f)
-}
-
-// HandleAccountLinking adds a new AccountLinkingHandler to the Messenger
-func (m *Messenger) HandleAccountLinking(f AccountLinkingHandler) {
-	m.accountLinkingHandlers = append(m.accountLinkingHandlers, f)
 }
 
 // Handler returns the Messenger in HTTP client form.
@@ -160,7 +99,7 @@ func (m *Messenger) ProfileByID(id int64) (Profile, error) {
 
 	req.URL.RawQuery = "fields=" + ProfileFields + "&access_token=" + m.token
 
-	resp, err := m.Client.Do(req)
+	resp, err := m.client.Do(req)
 	if err != nil {
 		return p, err
 	}
@@ -209,7 +148,7 @@ func (m *Messenger) GreetingSetting(text string) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = "access_token=" + m.token
 
-	resp, err := m.Client.Do(req)
+	resp, err := m.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -239,7 +178,7 @@ func (m *Messenger) CallToActionsSetting(state string, actions []CallToActionsIt
 	req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = "access_token=" + m.token
 
-	resp, err := m.Client.Do(req)
+	resp, err := m.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -336,12 +275,12 @@ func (m *Messenger) dispatch(ctx context.Context, r Receive) {
 			resp := &Response{
 				to:     Recipient{info.Sender.ID},
 				token:  m.token,
-				client: m.Client,
+				client: m.client,
 			}
 
 			switch a {
 			case TextAction:
-				for _, f := range m.messageHandlers {
+				for _, f := range Handlers.messageHandlers {
 					message := *info.Message
 					message.Sender = info.Sender
 					message.Recipient = info.Recipient
@@ -349,15 +288,15 @@ func (m *Messenger) dispatch(ctx context.Context, r Receive) {
 					f(ctx, message, resp)
 				}
 			case DeliveryAction:
-				for _, f := range m.deliveryHandlers {
+				for _, f := range Handlers.deliveryHandlers {
 					f(ctx, *info.Delivery, resp)
 				}
 			case ReadAction:
-				for _, f := range m.readHandlers {
+				for _, f := range Handlers.readHandlers {
 					f(ctx, *info.Read, resp)
 				}
 			case PostBackAction:
-				for _, f := range m.postBackHandlers {
+				for _, f := range Handlers.postBackHandlers {
 					message := *info.PostBack
 					message.Sender = info.Sender
 					message.Recipient = info.Recipient
@@ -365,7 +304,7 @@ func (m *Messenger) dispatch(ctx context.Context, r Receive) {
 					f(ctx, message, resp)
 				}
 			case OptInAction:
-				for _, f := range m.optInHandlers {
+				for _, f := range Handlers.optInHandlers {
 					message := *info.OptIn
 					message.Sender = info.Sender
 					message.Recipient = info.Recipient
@@ -373,7 +312,7 @@ func (m *Messenger) dispatch(ctx context.Context, r Receive) {
 					f(ctx, message, resp)
 				}
 			case ReferralAction:
-				for _, f := range m.referralHandlers {
+				for _, f := range Handlers.referralHandlers {
 					message := *info.ReferralMessage
 					message.Sender = info.Sender
 					message.Recipient = info.Recipient
@@ -381,7 +320,7 @@ func (m *Messenger) dispatch(ctx context.Context, r Receive) {
 					f(ctx, message, resp)
 				}
 			case AccountLinkingAction:
-				for _, f := range m.accountLinkingHandlers {
+				for _, f := range Handlers.accountLinkingHandlers {
 					message := *info.AccountLinking
 					message.Sender = info.Sender
 					message.Recipient = info.Recipient

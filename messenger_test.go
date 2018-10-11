@@ -1,6 +1,7 @@
 package messenger
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -95,7 +96,7 @@ func TestMessenger_Dispatch(t *testing.T) {
 		m := &Messenger{}
 		h := &handlersCalls{}
 
-		handler := func(msg Message, r *Response) {
+		handler := func(ctx context.Context, msg Message, r *Response) {
 			h.message++
 			assert.NotNil(t, r)
 			assert.EqualValues(t, 111, msg.Sender.ID)
@@ -113,16 +114,18 @@ func TestMessenger_Dispatch(t *testing.T) {
 			},
 		}
 
-		// First handler
-		m.HandleMessage(handler)
+		ctx := context.Background()
 
-		m.dispatch(newReceive(messages))
+		// First handler
+		Handlers.HandleMessage(handler)
+
+		m.dispatch(ctx, newReceive(messages))
 		assertHandlersCalls(t, h, handlersCalls{message: 1})
 
 		// Another handler
-		m.HandleMessage(handler)
+		Handlers.HandleMessage(handler)
 
-		m.dispatch(newReceive(messages))
+		m.dispatch(ctx, newReceive(messages))
 		assertHandlersCalls(t, h, handlersCalls{message: 3})
 	})
 
@@ -130,7 +133,7 @@ func TestMessenger_Dispatch(t *testing.T) {
 		m := &Messenger{}
 		h := &handlersCalls{}
 
-		handler := func(_ Delivery, r *Response) {
+		handler := func(ctx context.Context, _ Delivery, r *Response) {
 			h.delivery++
 			assert.NotNil(t, r)
 		}
@@ -145,16 +148,18 @@ func TestMessenger_Dispatch(t *testing.T) {
 			},
 		}
 
-		// First handler
-		m.HandleDelivery(handler)
+		ctx := context.Background()
 
-		m.dispatch(newReceive(messages))
+		// First handler
+		Handlers.HandleDelivery(handler)
+
+		m.dispatch(ctx, newReceive(messages))
 		assertHandlersCalls(t, h, handlersCalls{delivery: 1})
 
 		// Another handler
-		m.HandleDelivery(handler)
+		Handlers.HandleDelivery(handler)
 
-		m.dispatch(newReceive(messages))
+		m.dispatch(ctx, newReceive(messages))
 		assertHandlersCalls(t, h, handlersCalls{delivery: 3})
 	})
 
@@ -162,7 +167,7 @@ func TestMessenger_Dispatch(t *testing.T) {
 		m := &Messenger{}
 		h := &handlersCalls{}
 
-		handler := func(_ Read, r *Response) {
+		handler := func(ctx context.Context, _ Read, r *Response) {
 			h.read++
 			assert.NotNil(t, r)
 		}
@@ -177,16 +182,18 @@ func TestMessenger_Dispatch(t *testing.T) {
 			},
 		}
 
-		// First handler
-		m.HandleRead(handler)
+		ctx := context.Background()
 
-		m.dispatch(newReceive(messages))
+		// First handler
+		Handlers.HandleRead(handler)
+
+		m.dispatch(ctx, newReceive(messages))
 		assertHandlersCalls(t, h, handlersCalls{read: 1})
 
 		// Another handler
-		m.HandleRead(handler)
+		Handlers.HandleRead(handler)
 
-		m.dispatch(newReceive(messages))
+		m.dispatch(ctx, newReceive(messages))
 		assertHandlersCalls(t, h, handlersCalls{read: 3})
 	})
 
@@ -194,7 +201,7 @@ func TestMessenger_Dispatch(t *testing.T) {
 		m := &Messenger{}
 		h := &handlersCalls{}
 
-		handler := func(msg PostBack, r *Response) {
+		handler := func(ctx context.Context, msg PostBack, r *Response) {
 			h.postback++
 			assert.NotNil(t, r)
 			assert.EqualValues(t, 111, msg.Sender.ID)
@@ -212,16 +219,18 @@ func TestMessenger_Dispatch(t *testing.T) {
 			},
 		}
 
-		// First handler
-		m.HandlePostBack(handler)
+		ctx := context.Background()
 
-		m.dispatch(newReceive(messages))
+		// First handler
+		Handlers.HandlePostBack(handler)
+
+		m.dispatch(ctx, newReceive(messages))
 		assertHandlersCalls(t, h, handlersCalls{postback: 1})
 
 		// Another handler
-		m.HandlePostBack(handler)
+		Handlers.HandlePostBack(handler)
 
-		m.dispatch(newReceive(messages))
+		m.dispatch(ctx, newReceive(messages))
 		assertHandlersCalls(t, h, handlersCalls{postback: 3})
 	})
 
@@ -229,7 +238,7 @@ func TestMessenger_Dispatch(t *testing.T) {
 		m := &Messenger{}
 		h := &handlersCalls{}
 
-		handler := func(msg OptIn, r *Response) {
+		handler := func(ctx context.Context, msg OptIn, r *Response) {
 			h.optin++
 			assert.NotNil(t, r)
 			assert.EqualValues(t, 111, msg.Sender.ID)
@@ -247,16 +256,18 @@ func TestMessenger_Dispatch(t *testing.T) {
 			},
 		}
 
-		// First handler
-		m.HandleOptIn(handler)
+		ctx := context.Background()
 
-		m.dispatch(newReceive(messages))
+		// First handler
+		Handlers.HandleOptIn(handler)
+
+		m.dispatch(ctx, newReceive(messages))
 		assertHandlersCalls(t, h, handlersCalls{optin: 1})
 
 		// Another handler
-		m.HandleOptIn(handler)
+		Handlers.HandleOptIn(handler)
 
-		m.dispatch(newReceive(messages))
+		m.dispatch(ctx, newReceive(messages))
 		assertHandlersCalls(t, h, handlersCalls{optin: 3})
 	})
 
@@ -264,7 +275,7 @@ func TestMessenger_Dispatch(t *testing.T) {
 		m := &Messenger{}
 		h := &handlersCalls{}
 
-		handler := func(msg ReferralMessage, r *Response) {
+		handler := func(ctx context.Context, msg ReferralMessage, r *Response) {
 			h.referral++
 			assert.NotNil(t, r)
 			assert.EqualValues(t, 111, msg.Sender.ID)
@@ -282,16 +293,18 @@ func TestMessenger_Dispatch(t *testing.T) {
 			},
 		}
 
-		// First handler
-		m.HandleReferral(handler)
+		ctx := context.Background()
 
-		m.dispatch(newReceive(messages))
+		// First handler
+		Handlers.HandleReferral(handler)
+
+		m.dispatch(ctx, newReceive(messages))
 		assertHandlersCalls(t, h, handlersCalls{referral: 1})
 
 		// Another handler
-		m.HandleReferral(handler)
+		Handlers.HandleReferral(handler)
 
-		m.dispatch(newReceive(messages))
+		m.dispatch(ctx, newReceive(messages))
 		assertHandlersCalls(t, h, handlersCalls{referral: 3})
 	})
 }

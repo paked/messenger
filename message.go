@@ -66,6 +66,8 @@ type PostBack struct {
 	Referral Referral `json:"referral"`
 }
 
+// AccountLinking for linking accounts
+// https://developers.facebook.com/docs/messenger-platform/identity/account-linking/
 type AccountLinking struct {
 	// Sender is who the message was sent from.
 	Sender Sender `json:"-"`
