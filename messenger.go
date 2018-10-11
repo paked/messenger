@@ -36,54 +36,65 @@ type Options struct {
 	VerifyToken string
 	// Token is the access token of the Facebook page to send messages from.
 	Token string
-	// WebhookURL is where the Messenger client should listen for webhook events. Leaving the string blank implies a path of "/".
-	WebhookURL string
-	// Mux is shared mux between several Messenger objects
-	Mux *http.ServeMux
 	// Client is to allow use of custom clients like default or Google App Engine urlfetcher
 	Client *http.Client
 }
 
 // Messenger is the client which manages communication with the Messenger Platform API.
 type Messenger struct {
-	client        *http.Client
-	mux           *http.ServeMux
-	token         string
-	verifyHandler func(http.ResponseWriter, *http.Request)
-	verify        bool
-	appSecret     string
+	client      *http.Client
+	mux         *http.ServeMux
+	token       string
+	verify      bool
+	appSecret   string
+	verifyToken string
 }
 
 // New creates a new Messenger. You pass in Options in order to affect settings.
 func New(mo Options) *Messenger {
-	if mo.Mux == nil {
-		mo.Mux = http.NewServeMux()
-	}
-
 	if mo.Client == nil {
 		mo.Client = http.DefaultClient
 	}
 
 	m := &Messenger{
-		client:    mo.Client,
-		mux:       mo.Mux,
-		token:     mo.Token,
-		verify:    mo.Verify,
-		appSecret: mo.AppSecret,
+		client:      mo.Client,
+		token:       mo.Token,
+		verify:      mo.Verify,
+		appSecret:   mo.AppSecret,
+		verifyToken: mo.VerifyToken,
+	}
+
+	return m
+}
+
+// MuxOptions used to initialize options for http handler
+type MuxOptions struct {
+	// Mux is shared mux between several Messenger objects
+	Mux *http.ServeMux
+	// WebhookURL is where the Messenger client should listen for webhook events. Leaving the string blank implies a path of "/".
+	WebhookURL string
+}
+
+// SetupHandler for http handler options
+func (m *Messenger) SetupHandler(mo *MuxOptions) {
+	if mo.Mux == nil {
+		mo.Mux = http.NewServeMux()
 	}
 
 	if mo.WebhookURL == "" {
 		mo.WebhookURL = "/"
 	}
 
-	m.verifyHandler = newVerifyHandler(mo.VerifyToken)
-	m.mux.HandleFunc(mo.WebhookURL, m.Handle)
+	m.mux = mo.Mux
 
-	return m
+	m.mux.HandleFunc(mo.WebhookURL, m.Handle)
 }
 
 // Handler returns the Messenger in HTTP client form.
 func (m *Messenger) Handler() http.Handler {
+	if m.mux == nil {
+		m.SetupHandler(&MuxOptions{})
+	}
 	return m.mux
 }
 
@@ -188,6 +199,7 @@ func (m *Messenger) CallToActionsSetting(state string, actions []CallToActionsIt
 }
 
 // Handle is the internal HTTP handler for the webhooks.
+// Exposed to skip initialization if using GAE or similar need
 func (m *Messenger) Handle(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		m.verifyHandler(w, r)
@@ -395,12 +407,10 @@ func (m *Messenger) classify(info MessageInfo, e Entry) Action {
 }
 
 // newVerifyHandler returns a function which can be used to handle webhook verification
-func newVerifyHandler(token string) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.FormValue("hub.verify_token") == token {
-			fmt.Fprintln(w, r.FormValue("hub.challenge"))
-			return
-		}
-		fmt.Fprintln(w, "Incorrect verify token.")
+func (m *Messenger) verifyHandler(w http.ResponseWriter, r *http.Request) {
+	if r.FormValue("hub.verify_token") == m.verifyToken {
+		fmt.Fprintln(w, r.FormValue("hub.challenge"))
+		return
 	}
+	fmt.Fprintln(w, "Incorrect verify token.")
 }
