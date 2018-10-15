@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -11,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/paked/messenger"
+	"github.com/dfischer/messenger" // just for the PR so build passes
 )
 
 const (
@@ -51,7 +52,7 @@ func main() {
 	})
 
 	// Handle incoming messages
-	client.HandleMessage(func(m messenger.Message, r *messenger.Response) {
+	messenger.Handlers.HandleMessage(func(ctx context.Context, m messenger.Message, r *messenger.Response) {
 		log.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
 
 		p, err := client.ProfileByID(m.Sender.ID)
@@ -76,7 +77,7 @@ func main() {
 	})
 
 	// Send a feedback to the user after an update of account linking status
-	client.HandleAccountLinking(func(m messenger.AccountLinking, r *messenger.Response) {
+	messenger.Handlers.HandleAccountLinking(func(ctx context.Context, m messenger.AccountLinking, r *messenger.Response) {
 		var text string
 		switch m.Status {
 		case "linked":
