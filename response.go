@@ -17,6 +17,7 @@ import (
 // AttachmentType is attachment type.
 type AttachmentType string
 type MessagingType string
+type TopElementStyle string
 
 const (
 	// SendMessageURL is API endpoint for sending messages.
@@ -39,6 +40,11 @@ const (
 	MessageTagType MessagingType = "MESSAGE_TAG"
 	// NonPromotionalSubscriptionType is NON_PROMOTIONAL_SUBSCRIPTION messaging type
 	NonPromotionalSubscriptionType MessagingType = "NON_PROMOTIONAL_SUBSCRIPTION"
+
+	// TopElementStyle is compact.
+	CompactTopElementStyle TopElementStyle = "compact"
+	// TopElementStyle is large.
+	LargeTopElementStyle TopElementStyle = "large"
 )
 
 // QueryResponse is the response sent back by Facebook when setting up things
@@ -342,11 +348,12 @@ type StructuredMessageAttachment struct {
 // StructuredMessagePayload is the actual payload of an attachment
 type StructuredMessagePayload struct {
 	// TemplateType must be button, generic or receipt
-	TemplateType string                      `json:"template_type,omitempty"`
-	Text         string                      `json:"text,omitempty"`
-	Elements     *[]StructuredMessageElement `json:"elements,omitempty"`
-	Buttons      *[]StructuredMessageButton  `json:"buttons,omitempty"`
-	Url          string                      `json:"url,omitempty"`
+	TemplateType    string                      `json:"template_type,omitempty"`
+	TopElementStyle TopElementStyle             `json:"top_element_style,omitempty"`
+	Text            string                      `json:"text,omitempty"`
+	Elements        *[]StructuredMessageElement `json:"elements,omitempty"`
+	Buttons         *[]StructuredMessageButton  `json:"buttons,omitempty"`
+	Url             string                      `json:"url,omitempty"`
 }
 
 // StructuredMessageElement is a response containing structural elements
