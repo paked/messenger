@@ -18,6 +18,7 @@ import (
 type AttachmentType string
 type MessagingType string
 type TopElementStyle string
+type ImageAspectRatio string
 
 const (
 	// SendMessageURL is API endpoint for sending messages.
@@ -45,6 +46,11 @@ const (
 	CompactTopElementStyle TopElementStyle = "compact"
 	// TopElementStyle is large.
 	LargeTopElementStyle TopElementStyle = "large"
+
+	// ImageAspectRatio is horizontal (1.91:1). Default.
+	HorizontalImageAspectRatio ImageAspectRatio = "horizontal"
+	// ImageAspectRatio is square.
+	SquareImageAspectRatio ImageAspectRatio = "square"
 )
 
 // QueryResponse is the response sent back by Facebook when setting up things
@@ -348,12 +354,13 @@ type StructuredMessageAttachment struct {
 // StructuredMessagePayload is the actual payload of an attachment
 type StructuredMessagePayload struct {
 	// TemplateType must be button, generic or receipt
-	TemplateType    string                      `json:"template_type,omitempty"`
-	TopElementStyle TopElementStyle             `json:"top_element_style,omitempty"`
-	Text            string                      `json:"text,omitempty"`
-	Elements        *[]StructuredMessageElement `json:"elements,omitempty"`
-	Buttons         *[]StructuredMessageButton  `json:"buttons,omitempty"`
-	Url             string                      `json:"url,omitempty"`
+	TemplateType     string                      `json:"template_type,omitempty"`
+	TopElementStyle  TopElementStyle             `json:"top_element_style,omitempty"`
+	Text             string                      `json:"text,omitempty"`
+	ImageAspectRatio ImageAspectRatio            `json:"image_aspect_ratio,omitempty"`
+	Elements         *[]StructuredMessageElement `json:"elements,omitempty"`
+	Buttons          *[]StructuredMessageButton  `json:"buttons,omitempty"`
+	Url              string                      `json:"url,omitempty"`
 }
 
 // StructuredMessageElement is a response containing structural elements
