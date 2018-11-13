@@ -358,6 +358,7 @@ type StructuredMessagePayload struct {
 	TopElementStyle  TopElementStyle             `json:"top_element_style,omitempty"`
 	Text             string                      `json:"text,omitempty"`
 	ImageAspectRatio ImageAspectRatio            `json:"image_aspect_ratio,omitempty"`
+	Sharable         bool                        `json:"sharable,omitempty"`
 	Elements         *[]StructuredMessageElement `json:"elements,omitempty"`
 	Buttons          *[]StructuredMessageButton  `json:"buttons,omitempty"`
 	Url              string                      `json:"url,omitempty"`
