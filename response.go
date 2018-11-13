@@ -366,11 +366,22 @@ type StructuredMessagePayload struct {
 
 // StructuredMessageElement is a response containing structural elements
 type StructuredMessageElement struct {
-	Title    string                    `json:"title"`
-	ImageURL string                    `json:"image_url"`
-	ItemURL  string                    `json:"item_url"`
-	Subtitle string                    `json:"subtitle"`
-	Buttons  []StructuredMessageButton `json:"buttons"`
+	Title         string                    `json:"title"`
+	ImageURL      string                    `json:"image_url"`
+	ItemURL       string                    `json:"item_url"`
+	Subtitle      string                    `json:"subtitle"`
+	DefaultAction *DefaultAction            `json:"default_action,omitempty"`
+	Buttons       []StructuredMessageButton `json:"buttons"`
+}
+
+// DefaultAction is a response containing default action properties
+type DefaultAction struct {
+	Type                string `json:"type"`
+	URL                 string `json:"url,omitempty"`
+	WebviewHeightRatio  string `json:"webview_height_ratio,omitempty"`
+	MessengerExtensions bool   `json:"messenger_extensions,omitempty"`
+	FallbackURL         string `json:"fallback_url,omitempty"`
+	WebviewShareButton  string `json:"webview_share_button,omitempty"`
 }
 
 // StructuredMessageButton is a response containing buttons
