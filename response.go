@@ -18,6 +18,7 @@ import (
 type AttachmentType string
 type MessagingType string
 type TopElementStyle string
+type ImageAspectRatio string
 
 const (
 	// SendMessageURL is API endpoint for sending messages.
@@ -45,6 +46,11 @@ const (
 	CompactTopElementStyle TopElementStyle = "compact"
 	// TopElementStyle is large.
 	LargeTopElementStyle TopElementStyle = "large"
+
+	// ImageAspectRatio is horizontal (1.91:1). Default.
+	HorizontalImageAspectRatio ImageAspectRatio = "horizontal"
+	// ImageAspectRatio is square.
+	SquareImageAspectRatio ImageAspectRatio = "square"
 )
 
 // QueryResponse is the response sent back by Facebook when setting up things
@@ -348,21 +354,34 @@ type StructuredMessageAttachment struct {
 // StructuredMessagePayload is the actual payload of an attachment
 type StructuredMessagePayload struct {
 	// TemplateType must be button, generic or receipt
-	TemplateType    string                      `json:"template_type,omitempty"`
-	TopElementStyle TopElementStyle             `json:"top_element_style,omitempty"`
-	Text            string                      `json:"text,omitempty"`
-	Elements        *[]StructuredMessageElement `json:"elements,omitempty"`
-	Buttons         *[]StructuredMessageButton  `json:"buttons,omitempty"`
-	Url             string                      `json:"url,omitempty"`
+	TemplateType     string                      `json:"template_type,omitempty"`
+	TopElementStyle  TopElementStyle             `json:"top_element_style,omitempty"`
+	Text             string                      `json:"text,omitempty"`
+	ImageAspectRatio ImageAspectRatio            `json:"image_aspect_ratio,omitempty"`
+	Sharable         bool                        `json:"sharable,omitempty"`
+	Elements         *[]StructuredMessageElement `json:"elements,omitempty"`
+	Buttons          *[]StructuredMessageButton  `json:"buttons,omitempty"`
+	Url              string                      `json:"url,omitempty"`
 }
 
 // StructuredMessageElement is a response containing structural elements
 type StructuredMessageElement struct {
-	Title    string                    `json:"title"`
-	ImageURL string                    `json:"image_url"`
-	ItemURL  string                    `json:"item_url"`
-	Subtitle string                    `json:"subtitle"`
-	Buttons  []StructuredMessageButton `json:"buttons"`
+	Title         string                    `json:"title"`
+	ImageURL      string                    `json:"image_url"`
+	ItemURL       string                    `json:"item_url"`
+	Subtitle      string                    `json:"subtitle"`
+	DefaultAction *DefaultAction            `json:"default_action,omitempty"`
+	Buttons       []StructuredMessageButton `json:"buttons"`
+}
+
+// DefaultAction is a response containing default action properties
+type DefaultAction struct {
+	Type                string `json:"type"`
+	URL                 string `json:"url,omitempty"`
+	WebviewHeightRatio  string `json:"webview_height_ratio,omitempty"`
+	MessengerExtensions bool   `json:"messenger_extensions,omitempty"`
+	FallbackURL         string `json:"fallback_url,omitempty"`
+	WebviewShareButton  string `json:"webview_share_button,omitempty"`
 }
 
 // StructuredMessageButton is a response containing buttons
