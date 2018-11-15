@@ -44,3 +44,12 @@ type CallToActionsItem struct {
 	WebviewHeightRatio string `json:"webview_height_ratio,omitempty"`
 	MessengerExtension bool   `json:"messenger_extensions,omitempty"`
 }
+
+// HomeURL is the settings for EnableChatExtension
+// https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/home-url
+type HomeURL struct {
+	URL                string `json:"url,omitempty"`
+	WebviewHeightRatio string `json:"webview_height_ratio,omitempty"`
+	WebviewShareButton string `json:"webview_share_button,omitempty"`
+	InTest             bool   `json:"in_test,omitempty"`
+}
