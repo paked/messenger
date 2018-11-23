@@ -20,6 +20,11 @@ const (
 	ProfileFields = "first_name,last_name,profile_pic,locale,timezone,gender"
 	// SendSettingsURL is API endpoint for saving settings.
 	SendSettingsURL = "https://graph.facebook.com/v2.6/me/thread_settings"
+
+	// MessengerProfileURL is the API endoint where yout bot set properties that define various aspects of the following Messenger Platform features.
+	// Used in the form https://graph.facebook.com/v2.6/me/messenger_profile?access_token=<PAGE_ACCESS_TOKEN>
+	// https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/
+	MessengerProfileURL = "https://graph.facebook.com/v2.6/me/messenger_profile"
 )
 
 // Options are the settings used when creating a Messenger client.
@@ -433,6 +438,35 @@ func (m *Messenger) Attachment(to Recipient, dataType AttachmentType, url string
 	}
 
 	return response.Attachment(dataType, url, messagingType, tags...)
+}
+
+// EnableChatExtension set the homepage url required for a chat extension.
+func (m *Messenger) EnableChatExtension(homeURL HomeURL) error {
+	wrap := map[string]interface{}{
+		"home_url": homeURL,
+	}
+	data, err := json.Marshal(wrap)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", MessengerProfileURL, bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.URL.RawQuery = "access_token=" + m.token
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return checkFacebookError(resp.Body)
 }
 
 // classify determines what type of message a webhook event is.
