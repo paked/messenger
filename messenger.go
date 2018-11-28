@@ -16,8 +16,6 @@ const (
 	// ProfileURL is the API endpoint used for retrieving profiles.
 	// Used in the form: https://graph.facebook.com/v2.6/<USER_ID>?fields=<PROFILE_FIELDS>&access_token=<PAGE_ACCESS_TOKEN>
 	ProfileURL = "https://graph.facebook.com/v2.6/"
-	// ProfileFields is a list of JSON field names which will be populated by the profile query.
-	ProfileFields = "first_name,last_name,profile_pic,locale,timezone,gender"
 	// SendSettingsURL is API endpoint for saving settings.
 	SendSettingsURL = "https://graph.facebook.com/v2.6/me/thread_settings"
 
@@ -25,6 +23,10 @@ const (
 	// Used in the form https://graph.facebook.com/v2.6/me/messenger_profile?access_token=<PAGE_ACCESS_TOKEN>
 	// https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/
 	MessengerProfileURL = "https://graph.facebook.com/v2.6/me/messenger_profile"
+)
+
+var (
+	defaultProfileFields = []string{"first_name", "last_name", "profile_pic", "locale", "timezone", "gender"}
 )
 
 // Options are the settings used when creating a Messenger client.
@@ -151,8 +153,9 @@ func (m *Messenger) Handler() http.Handler {
 	return m.mux
 }
 
-// ProfileByID retrieves the Facebook user associated with that ID
-func (m *Messenger) ProfileByID(id int64) (Profile, error) {
+// ProfileByID retrieves the Facebook user profile associated with that ID
+// when no profile fields are specified it defaults to defaultProfileFields
+func (m *Messenger) ProfileByID(id int64, profileFields ...string) (Profile, error) {
 	p := Profile{}
 	url := fmt.Sprintf("%v%v", ProfileURL, id)
 
@@ -161,7 +164,13 @@ func (m *Messenger) ProfileByID(id int64) (Profile, error) {
 		return p, err
 	}
 
-	req.URL.RawQuery = "fields=" + ProfileFields + "&access_token=" + m.token
+	if len(profileFields) == 0 {
+		profileFields = defaultProfileFields
+	}
+
+	fields := strings.Join(profileFields, ",")
+
+	req.URL.RawQuery = "fields=" + fields + "&access_token=" + m.token
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
