@@ -26,6 +26,7 @@ const (
 )
 
 var (
+	// NOTE: If you change this slice you should update the comment on the ProfileByID function below too. 
 	defaultProfileFields = []string{"first_name", "last_name", "profile_pic", "locale", "timezone", "gender"}
 )
 
@@ -154,7 +155,15 @@ func (m *Messenger) Handler() http.Handler {
 }
 
 // ProfileByID retrieves the Facebook user profile associated with that ID
-// when no profile fields are specified it defaults to defaultProfileFields
+// when no profile fields are specified it uses some sane defaults.
+// 
+// These default fields are:
+// - First name
+// - Last name
+// - Profile picture
+// - Locale
+// - Timezone
+// - Gender
 func (m *Messenger) ProfileByID(id int64, profileFields ...string) (Profile, error) {
 	p := Profile{}
 	url := fmt.Sprintf("%v%v", ProfileURL, id)
