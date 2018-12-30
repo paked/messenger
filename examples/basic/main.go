@@ -8,16 +8,18 @@ import (
 	"os"
 	"time"
 
+	msgs "github.com/messenger"
 	"github.com/paked/messenger"
 )
 
+var vt, acct, appsc = msgs.GetTokens()
 var (
-	verifyToken = flag.String("verify-token", "mad-skrilla", "The token used to verify facebook (required)")
+	verifyToken = flag.String("verify-token", vt, "The token used to verify facebook (required)")
 	verify      = flag.Bool("should-verify", false, "Whether or not the app should verify itself")
-	pageToken   = flag.String("page-token", "not skrilla", "The token that is used to verify the page on facebook")
-	appSecret   = flag.String("app-secret", "", "The app secret from the facebook developer portal (required)")
+	pageToken   = flag.String("page-token", acct, "The token that is used to verify the page on facebook")
+	appSecret   = flag.String("app-secret", appsc, "The app secret from the facebook developer portal (required)")
 	host        = flag.String("host", "localhost", "The host used to serve the messenger bot")
-	port        = flag.Int("port", 8080, "The port used to serve the messenger bot")
+	port        = flag.Int("port", 5000, "The port used to serve the messenger bot")
 )
 
 func main() {
