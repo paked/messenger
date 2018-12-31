@@ -7,12 +7,10 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	msgs "github.com/messenger"
 	"github.com/paked/messenger"
 )
 
-var vt, acct, appsc = msgs.GetTokens()
+var vt, acct, appsc = messenger.GetTokens()
 var (
 	verifyToken = flag.String("verify-token", vt, "The token used to verify facebook (required)")
 	verify      = flag.Bool("should-verify", false, "Whether or not the app should verify itself")
