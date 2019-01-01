@@ -368,7 +368,7 @@ type StructuredMessagePayload struct {
 type StructuredMessageElement struct {
 	Title         string                    `json:"title"`
 	ImageURL      string                    `json:"image_url"`
-	ItemURL       string                    `json:"item_url"`
+	ItemURL       string                    `json:"item_url,omitempty"`
 	Subtitle      string                    `json:"subtitle"`
 	DefaultAction *DefaultAction            `json:"default_action,omitempty"`
 	Buttons       []StructuredMessageButton `json:"buttons"`
