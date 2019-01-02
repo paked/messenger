@@ -1,5 +1,0 @@
-verify_token: <verify_token_here>
-access_token: <access_token_here>
-app_secret: <app_secret_here>
-
-# other configs can be added as necessary. For example, the webhook URL and host.

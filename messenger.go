@@ -240,7 +240,7 @@ func (m *Messenger) GreetingSetting(text string) error {
 	return checkFacebookError(resp.Body)
 }
 
-// CallToActionsSetting sends settings for Get Started or Persist Menu
+// CallToActionsSetting sends settings for Get Started or Persistent Menu
 func (m *Messenger) CallToActionsSetting(state string, actions []CallToActionsItem) error {
 	d := CallToActionsSetting{
 		SettingType:   "call_to_actions",
