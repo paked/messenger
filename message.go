@@ -16,6 +16,8 @@ type Message struct {
 	Mid string `json:"mid"`
 	// Seq is order the message was sent in relation to other messages.
 	Seq int `json:"seq"`
+	// StickerID is the ID of the sticker user sent.
+	StickerID int `json:"sticker_id"`
 	// Text is the textual contents of the message.
 	Text string `json:"text"`
 	// Attachments is the information about the attachments which were sent
