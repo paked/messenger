@@ -14,6 +14,11 @@ import (
 	"github.com/paked/messenger"
 )
 
+//profileField is a slice of strings of the user profile field the developer wants access
+var (
+	profileField = []string{"name", "first_name", "last_name", "profile_pic"}
+)
+
 const (
 	webhooksPath = "/webhooks"
 	loginPath    = "/signin"

@@ -150,7 +150,15 @@ func (m *Messenger) Handler() http.Handler {
 	return m.mux
 }
 
-// ProfileByID retrieves the Facebook user profile associated with that ID
+// ProfileByID retrieves the Facebook user profile associated with that ID.
+// According to the messenger docs: https://developers.facebook.com/docs/messenger-platform/identity/user-profile,
+// Developers must ask for access except for some fields that are accessible without permissions.
+//
+// These fields are
+// - Name
+// - First Name
+// - Last Name
+// - Profile Picture
 func (m *Messenger) ProfileByID(id int64, profileFields []string) (Profile, error) {
 	p := Profile{}
 	url := fmt.Sprintf("%v%v", ProfileURL, id)

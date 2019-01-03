@@ -11,6 +11,10 @@ import (
 	"github.com/paked/messenger"
 )
 
+//profileField is a slice of strings of the user profile field the developer wants access
+var (
+	profileField = []string{"name", "first_name", "last_name", "profile_pic"}
+)
 var (
 	verifyToken = flag.String("verify-token", "mad-skrilla", "The token used to verify facebook (required)")
 	verify      = flag.Bool("should-verify", false, "Whether or not the app should verify itself")
@@ -43,7 +47,7 @@ func main() {
 	client.HandleMessage(func(m messenger.Message, r *messenger.Response) {
 		fmt.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
 
-		p, err := client.ProfileByID(m.Sender.ID)
+		p, err := client.ProfileByID(m.Sender.ID, profileField)
 		if err != nil {
 			fmt.Println("Something went wrong!", err)
 		}
