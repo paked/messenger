@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -23,11 +24,6 @@ const (
 	// Used in the form https://graph.facebook.com/v2.6/me/messenger_profile?access_token=<PAGE_ACCESS_TOKEN>
 	// https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/
 	MessengerProfileURL = "https://graph.facebook.com/v2.6/me/messenger_profile"
-)
-
-var (
-	// NOTE: If you change this slice you should update the comment on the ProfileByID function below too.
-	defaultProfileFields = []string{"name", "first_name", "last_name", "profile_pic"}
 )
 
 // Options are the settings used when creating a Messenger client.
@@ -155,14 +151,7 @@ func (m *Messenger) Handler() http.Handler {
 }
 
 // ProfileByID retrieves the Facebook user profile associated with that ID
-// when no profile fields are specified it uses some sane defaults.
-//
-// These default fields are:
-// - Name
-// - First name
-// - Last name
-// - Profile picture
-func (m *Messenger) ProfileByID(id int64, profileFields ...string) (Profile, error) {
+func (m *Messenger) ProfileByID(id int64, profileFields []string) (Profile, error) {
 	p := Profile{}
 	url := fmt.Sprintf("%v%v", ProfileURL, id)
 
@@ -172,7 +161,7 @@ func (m *Messenger) ProfileByID(id int64, profileFields ...string) (Profile, err
 	}
 
 	if len(profileFields) == 0 {
-		profileFields = defaultProfileFields
+		return p, errors.New("Profile field cannot be empty")
 	}
 
 	fields := strings.Join(profileFields, ",")
