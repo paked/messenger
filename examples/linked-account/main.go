@@ -14,11 +14,6 @@ import (
 	"github.com/paked/messenger"
 )
 
-//profileField is a slice of strings of the user profile field the developer wants access
-var (
-	profileField = []string{"name", "first_name", "last_name", "profile_pic"}
-)
-
 const (
 	webhooksPath = "/webhooks"
 	loginPath    = "/signin"
@@ -59,7 +54,7 @@ func main() {
 	client.HandleMessage(func(m messenger.Message, r *messenger.Response) {
 		log.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
 
-		p, err := client.ProfileByID(m.Sender.ID, profileField)
+		p, err := client.ProfileByID(m.Sender.ID, []string{"name", "first_name", "last_name", "profile_pic"})
 		if err != nil {
 			log.Println("Failed to fetch user profile:", err)
 		}

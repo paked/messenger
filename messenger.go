@@ -5,7 +5,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -154,7 +153,7 @@ func (m *Messenger) Handler() http.Handler {
 // According to the messenger docs: https://developers.facebook.com/docs/messenger-platform/identity/user-profile,
 // Developers must ask for access except for some fields that are accessible without permissions.
 //
-// These fields are
+// At the time of writing (2019-01-04), these fields are
 // - Name
 // - First Name
 // - Last Name
@@ -166,10 +165,6 @@ func (m *Messenger) ProfileByID(id int64, profileFields []string) (Profile, erro
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return p, err
-	}
-
-	if len(profileFields) == 0 {
-		return p, errors.New("Profile field cannot be empty")
 	}
 
 	fields := strings.Join(profileFields, ",")
