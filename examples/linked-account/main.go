@@ -54,7 +54,7 @@ func main() {
 	client.HandleMessage(func(m messenger.Message, r *messenger.Response) {
 		log.Printf("%v (Sent, %v)\n", m.Text, m.Time.Format(time.UnixDate))
 
-		p, err := client.ProfileByID(m.Sender.ID)
+		p, err := client.ProfileByID(m.Sender.ID, []string{"name", "first_name", "last_name", "profile_pic"})
 		if err != nil {
 			log.Println("Failed to fetch user profile:", err)
 		}

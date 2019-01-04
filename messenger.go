@@ -25,11 +25,6 @@ const (
 	MessengerProfileURL = "https://graph.facebook.com/v2.6/me/messenger_profile"
 )
 
-var (
-	// NOTE: If you change this slice you should update the comment on the ProfileByID function below too. 
-	defaultProfileFields = []string{"first_name", "last_name", "profile_pic", "locale", "timezone", "gender"}
-)
-
 // Options are the settings used when creating a Messenger client.
 type Options struct {
 	// Verify sets whether or not to be in the "verify" mode. Used for
@@ -154,27 +149,22 @@ func (m *Messenger) Handler() http.Handler {
 	return m.mux
 }
 
-// ProfileByID retrieves the Facebook user profile associated with that ID
-// when no profile fields are specified it uses some sane defaults.
-// 
-// These default fields are:
-// - First name
-// - Last name
-// - Profile picture
-// - Locale
-// - Timezone
-// - Gender
-func (m *Messenger) ProfileByID(id int64, profileFields ...string) (Profile, error) {
+// ProfileByID retrieves the Facebook user profile associated with that ID.
+// According to the messenger docs: https://developers.facebook.com/docs/messenger-platform/identity/user-profile,
+// Developers must ask for access except for some fields that are accessible without permissions.
+//
+// At the time of writing (2019-01-04), these fields are
+// - Name
+// - First Name
+// - Last Name
+// - Profile Picture
+func (m *Messenger) ProfileByID(id int64, profileFields []string) (Profile, error) {
 	p := Profile{}
 	url := fmt.Sprintf("%v%v", ProfileURL, id)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return p, err
-	}
-
-	if len(profileFields) == 0 {
-		profileFields = defaultProfileFields
 	}
 
 	fields := strings.Join(profileFields, ",")
@@ -242,7 +232,7 @@ func (m *Messenger) GreetingSetting(text string) error {
 	return checkFacebookError(resp.Body)
 }
 
-// CallToActionsSetting sends settings for Get Started or Persist Menu
+// CallToActionsSetting sends settings for Get Started or Persistent Menu
 func (m *Messenger) CallToActionsSetting(state string, actions []CallToActionsItem) error {
 	d := CallToActionsSetting{
 		SettingType:   "call_to_actions",

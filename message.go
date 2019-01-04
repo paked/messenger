@@ -2,7 +2,7 @@ package messenger
 
 import "time"
 
-// Message represents a Facebook messenge message.
+// Message represents a Facebook messenger message.
 type Message struct {
 	// Sender is who the message was sent from.
 	Sender Sender `json:"-"`
