@@ -4,6 +4,8 @@ This is a Go library for making bots to be used on Facebook messenger. It is bui
 
 You can find [examples for this library here](https://github.com/paked/messenger/blob/master/examples/).
 
+We tag our releases Semver style.
+
 ## Tips
 
 - Follow the [quickstart](https://developers.facebook.com/docs/messenger-platform/quickstart) guide for getting everything set up!
@@ -12,8 +14,9 @@ You can find [examples for this library here](https://github.com/paked/messenger
 
 ## Breaking Changes
 
-`paked/messenger` is a pretty stable library however, changes will be made which might break backwards compatibility. For the convenience of its users, these are documented here.
+In January 2019 we began tagging releases so that the package could be used properly with Go modules. Prior to that we simply maintained the following list to help users migrate between versions, it's staying here for legacy reasons. From now on, however, you should find breaking changes in the notes of a new release.
 
+`paked/messenger` is a pretty stable library however, changes will be made which might break backwards compatibility. For the convenience of its users, these are documented here.
 
 - 06/2/18: Added messaging_type field for message send API request as it is required by FB
 - [23/1/17](https://github.com/paked/messenger/commit/1145fe35249f8ce14d3c0a52544e4a4babdc15a4): Updating timezone type to `float64` in profile struct
