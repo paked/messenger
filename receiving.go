@@ -92,6 +92,8 @@ type Recipient struct {
 
 // Attachment is a file which used in a message.
 type Attachment struct {
+	Title string `json:"title,omitempty"`
+	URL   string `json:"url,omitempty"`
 	// Type is what type the message is. (image, video, audio or location)
 	Type string `json:"type"`
 	// Payload is the information for the file which was sent in the attachment.
@@ -111,7 +113,7 @@ type QuickReply struct {
 // Payload is the information on where an attachment is.
 type Payload struct {
 	// URL is where the attachment resides on the internet.
-	URL         string       `json:"url,omitempty"`
+	URL string `json:"url,omitempty"`
 	// Coordinates is Lat/Long pair of location pin
 	Coordinates *Coordinates `json:"coordinates,omitempty"`
 }
@@ -119,7 +121,7 @@ type Payload struct {
 // Coordinates is a pair of latitude and longitude
 type Coordinates struct {
 	// Lat is latitude
-	Lat  float64 `json:"lat"`
+	Lat float64 `json:"lat"`
 	// Long is longitude
 	Long float64 `json:"long"`
 }

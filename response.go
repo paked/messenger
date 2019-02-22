@@ -351,7 +351,9 @@ type StructuredMessageData struct {
 // StructuredMessageAttachment is the attachment of a structured message.
 type StructuredMessageAttachment struct {
 	// Type must be template
-	Type AttachmentType `json:"type"`
+	Title string         `json:"title,omitempty"`
+	URL   string         `json:"url,omitempty"`
+	Type  AttachmentType `json:"type"`
 	// Payload is the information for the file which was sent in the attachment.
 	Payload StructuredMessagePayload `json:"payload"`
 }
