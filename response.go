@@ -367,6 +367,7 @@ type StructuredMessagePayload struct {
 	Elements         *[]StructuredMessageElement `json:"elements,omitempty"`
 	Buttons          *[]StructuredMessageButton  `json:"buttons,omitempty"`
 	Url              string                      `json:"url,omitempty"`
+	AttachmentID     string                      `json:"attachment_id,omitempty"`
 }
 
 // StructuredMessageElement is a response containing structural elements
