@@ -392,14 +392,15 @@ type DefaultAction struct {
 
 // StructuredMessageButton is a response containing buttons
 type StructuredMessageButton struct {
-	Type                string `json:"type"`
-	URL                 string `json:"url,omitempty"`
-	Title               string `json:"title,omitempty"`
-	Payload             string `json:"payload,omitempty"`
-	WebviewHeightRatio  string `json:"webview_height_ratio,omitempty"`
-	MessengerExtensions bool   `json:"messenger_extensions,omitempty"`
-	FallbackURL         string `json:"fallback_url,omitempty"`
-	WebviewShareButton  string `json:"webview_share_button,omitempty"`
+	Type                string                 `json:"type"`
+	URL                 string                 `json:"url,omitempty"`
+	Title               string                 `json:"title,omitempty"`
+	Payload             string                 `json:"payload,omitempty"`
+	WebviewHeightRatio  string                 `json:"webview_height_ratio,omitempty"`
+	MessengerExtensions bool                   `json:"messenger_extensions,omitempty"`
+	FallbackURL         string                 `json:"fallback_url,omitempty"`
+	WebviewShareButton  string                 `json:"webview_share_button,omitempty"`
+	ShareContents       *StructuredMessageData `json:"share_contents,omitempty"`
 }
 
 // SendSenderAction is the information about sender action
