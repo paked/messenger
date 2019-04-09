@@ -23,6 +23,10 @@ type ImageAspectRatio string
 const (
 	// SendMessageURL is API endpoint for sending messages.
 	SendMessageURL = "https://graph.facebook.com/v2.11/me/messages"
+	// ThreadControlURL is the API endpoint for passing thread control.
+	ThreadControlURL = "https://graph.facebook.com/v2.6/me/pass_thread_control"
+	// InboxPageID is managed by facebook for secondary pass to inbox features: https://developers.facebook.com/docs/messenger-platform/handover-protocol/pass-thread-control
+	InboxPageID = 263902037430900
 
 	// ImageAttachment is image attachment type.
 	ImageAttachment AttachmentType = "image"
@@ -317,6 +321,37 @@ func (r *Response) DispatchMessage(m interface{}) error {
 	if resp.StatusCode == 200 {
 		return nil
 	}
+	return checkFacebookError(resp.Body)
+}
+
+// PassThreadToInbox Uses Messenger Handover Protocol for live inbox
+// https://developers.facebook.com/docs/messenger-platform/handover-protocol/#inbox
+func (r *Response) PassThreadToInbox() error {
+	p := passThreadControl{
+		Recipient:   r.to,
+		TargetAppID: InboxPageID,
+		Metadata:    "Passing to inbox secondary app",
+	}
+
+	data, err := json.Marshal(p)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", ThreadControlURL, bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.URL.RawQuery = "access_token=" + r.token
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
 	return checkFacebookError(resp.Body)
 }
 
