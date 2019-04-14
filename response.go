@@ -285,6 +285,32 @@ func (r *Response) GenericTemplate(elements *[]StructuredMessageElement, messagi
 	return r.DispatchMessage(&m)
 }
 
+// ListTemplate sends a list of elements
+func (r *Response) ListTemplate(elements *[]StructuredMessageElement, messagingType MessagingType, tags ...string) error {
+	var tag string
+	if len(tags) > 0 {
+		tag = tags[0]
+	}
+
+	m := SendStructuredMessage{
+		MessagingType: messagingType,
+		Recipient:     r.to,
+		Message: StructuredMessageData{
+			Attachment: StructuredMessageAttachment{
+				Type: "template",
+				Payload: StructuredMessagePayload{
+					TopElementStyle: "compact",
+					TemplateType:    "list",
+					Buttons:         nil,
+					Elements:        elements,
+				},
+			},
+		},
+		Tag: tag,
+	}
+	return r.DispatchMessage(&m)
+}
+
 // SenderAction sends a info about sender action
 func (r *Response) SenderAction(action string) error {
 	m := SendSenderAction{
