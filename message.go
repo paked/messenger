@@ -1,6 +1,9 @@
 package messenger
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // Message represents a Facebook messenger message.
 type Message struct {
@@ -25,6 +28,9 @@ type Message struct {
 	Attachments []Attachment `json:"attachments"`
 	// Selected quick reply
 	QuickReply *QuickReply `json:"quick_reply,omitempty"`
+	// Entities for NLP
+	// https://developers.facebook.com/docs/messenger-platform/built-in-nlp/
+	NLP json.RawMessage `json:"nlp"`
 }
 
 // Delivery represents a the event fired when Facebook delivers a message to the
@@ -83,4 +89,10 @@ func (d Delivery) Watermark() time.Time {
 // Watermark is the RawWatermark timestamp rendered as a time.Time.
 func (r Read) Watermark() time.Time {
 	return time.Unix(r.RawWatermark/int64(time.Microsecond), 0)
+}
+
+// GetNLP simply unmarshals the NLP entities to the given struct and returns
+// an error if it's not possible
+func (m *Message) GetNLP(i interface{}) error {
+	return json.Unmarshal(m.NLP, &i)
 }
