@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"net/textproto"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // AttachmentType is attachment type.
@@ -72,19 +74,19 @@ type QueryError struct {
 	FBTraceID string `json:"fbtrace_id"`
 }
 
-func checkFacebookError(r io.Reader) error {
-	var err error
+// QueryError implements error
+func (e QueryError) Error() string {
+	return e.Message
+}
 
+func checkFacebookError(r io.Reader) error {
 	qr := QueryResponse{}
-	err = json.NewDecoder(r).Decode(&qr)
-	if err != nil {
-		return fmt.Errorf("json unmarshal error: %s", err)
+	if err := json.NewDecoder(r).Decode(&qr); err != nil {
+		return errors.Wrap(err, "json unmarshal error")
 	}
 	if qr.Error != nil {
-		err = fmt.Errorf("facebook error: %s", qr.Error.Message)
-		return err
+		return errors.Wrap(qr.Error, "facebook error")
 	}
-
 	return nil
 }
 

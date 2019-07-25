@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/matryer/respond"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -206,13 +207,14 @@ func (m *Messenger) ProfileByID(id int64, profileFields []string) (Profile, erro
 
 	if p == *new(Profile) {
 		qr := QueryResponse{}
-		err = json.Unmarshal(content, &qr)
+		if err = json.Unmarshal(content, &qr); err != nil {
+			return p, errors.Wrap(err, "json decoding error")
+		}
 		if qr.Error != nil {
-			err = fmt.Errorf("facebook error: %s", qr.Error.Message)
+			return p, errors.Wrap(qr.Error, "facebook error")
 		}
 	}
-
-	return p, err
+	return p, nil
 }
 
 // GreetingSetting sends settings for greeting
@@ -322,22 +324,22 @@ func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 // checkIntegrity checks the integrity of the requests received
 func (m *Messenger) checkIntegrity(r *http.Request) error {
 	if m.appSecret == "" {
-		return fmt.Errorf("missing app secret")
+		return errors.New("missing app secret")
 	}
 
 	sigHeader := "X-Hub-Signature"
 	sig := strings.SplitN(r.Header.Get(sigHeader), "=", 2)
 	if len(sig) == 1 {
 		if sig[0] == "" {
-			return fmt.Errorf("missing %s header", sigHeader)
+			return errors.Errorf("missing %s header", sigHeader)
 		}
-		return fmt.Errorf("malformed %s header: %v", sigHeader, strings.Join(sig, "="))
+		return errors.Errorf("malformed %s header: %v", sigHeader, strings.Join(sig, "="))
 	}
 
 	checkSHA1 := func(body []byte, hash string) error {
 		mac := hmac.New(sha1.New, []byte(m.appSecret))
 		if mac.Write(body); fmt.Sprintf("%x", mac.Sum(nil)) != hash {
-			return fmt.Errorf("invalid signature: %s", hash)
+			return errors.Errorf("invalid signature: %s", hash)
 		}
 		return nil
 	}
@@ -351,7 +353,7 @@ func (m *Messenger) checkIntegrity(r *http.Request) error {
 	case "sha1":
 		return checkSHA1(body, sigHash)
 	default:
-		return fmt.Errorf("unknown %s header encoding, expected sha1: %s", sigHeader, sig[0])
+		return errors.Errorf("unknown %s header encoding, expected sha1: %s", sigHeader, sig[0])
 	}
 }
 
