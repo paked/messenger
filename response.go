@@ -77,8 +77,11 @@ func checkFacebookError(r io.Reader) error {
 
 	qr := QueryResponse{}
 	err = json.NewDecoder(r).Decode(&qr)
+	if err != nil {
+		return fmt.Errorf("json unmarshal error: %s", err)
+	}
 	if qr.Error != nil {
-		err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
+		err = fmt.Errorf("facebook error: %s", qr.Error.Message)
 		return err
 	}
 
