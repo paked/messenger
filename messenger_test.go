@@ -56,7 +56,7 @@ func TestMessenger_Classify(t *testing.T) {
 		},
 	} {
 		t.Run("action "+name, func(t *testing.T) {
-			action := m.classify(test.msgInfo, Entry{})
+			action := m.classify(test.msgInfo)
 			assert.Exactly(t, action, test.expected)
 		})
 	}

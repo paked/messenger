@@ -19,7 +19,7 @@ const (
 	// SendSettingsURL is API endpoint for saving settings.
 	SendSettingsURL = "https://graph.facebook.com/v2.6/me/thread_settings"
 
-	// MessengerProfileURL is the API endoint where yout bot set properties that define various aspects of the following Messenger Platform features.
+	// MessengerProfileURL is the API endpoint where you set properties that define various aspects of the following Messenger Platform features.
 	// Used in the form https://graph.facebook.com/v2.6/me/messenger_profile?access_token=<PAGE_ACCESS_TOKEN>
 	// https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/
 	MessengerProfileURL = "https://graph.facebook.com/v2.6/me/messenger_profile"
@@ -192,7 +192,7 @@ func (m *Messenger) ProfileByID(id int64, profileFields []string) (Profile, erro
 		qr := QueryResponse{}
 		err = json.Unmarshal(content, &qr)
 		if qr.Error != nil {
-			err = fmt.Errorf("Facebook error : %s", qr.Error.Message)
+			err = fmt.Errorf("facebook error: %s", qr.Error.Message)
 		}
 	}
 
@@ -341,7 +341,7 @@ func (m *Messenger) checkIntegrity(r *http.Request) error {
 func (m *Messenger) dispatch(r Receive) {
 	for _, entry := range r.Entry {
 		for _, info := range entry.Messaging {
-			a := m.classify(info, entry)
+			a := m.classify(info)
 			if a == UnknownAction {
 				fmt.Println("Unknown action:", info)
 				continue
@@ -478,7 +478,7 @@ func (m *Messenger) EnableChatExtension(homeURL HomeURL) error {
 }
 
 // classify determines what type of message a webhook event is.
-func (m *Messenger) classify(info MessageInfo, e Entry) Action {
+func (m *Messenger) classify(info MessageInfo) Action {
 	if info.Message != nil {
 		return TextAction
 	} else if info.Delivery != nil {

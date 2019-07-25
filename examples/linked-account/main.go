@@ -17,7 +17,6 @@ import (
 const (
 	webhooksPath = "/webhooks"
 	loginPath    = "/signin"
-	logoutPath   = "/signout"
 
 	validUsername = "john"
 	validPassword = "secret"
