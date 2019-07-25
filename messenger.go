@@ -8,8 +8,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"time"
+
+	"github.com/matryer/respond"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -42,6 +46,8 @@ type Options struct {
 	WebhookURL string
 	// Mux is shared mux between several Messenger objects
 	Mux *http.ServeMux
+	// Logger provides logging
+	Logger logrus.FieldLogger
 }
 
 // MessageHandler is a handler used for responding to a message containing text.
@@ -82,6 +88,8 @@ type Messenger struct {
 	appSecret              string
 }
 
+var log logrus.FieldLogger
+
 // New creates a new Messenger. You pass in Options in order to affect settings.
 func New(mo Options) *Messenger {
 	if mo.Mux == nil {
@@ -93,6 +101,14 @@ func New(mo Options) *Messenger {
 		token:     mo.Token,
 		verify:    mo.Verify,
 		appSecret: mo.AppSecret,
+	}
+
+	if mo.Logger != nil {
+		log = mo.Logger
+	} else {
+		l := logrus.New()
+		l.SetOutput(os.Stdout)
+		log = l
 	}
 
 	if mo.WebhookURL == "" {
@@ -279,26 +295,28 @@ func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 
 	err := json.Unmarshal(body, &rec)
 	if err != nil {
-		fmt.Println("could not decode response:", err)
-		fmt.Fprintln(w, `{status: 'not ok'}`)
+		log.WithError(err).Error("failed to decode response")
+		respond.WithStatus(w, r, http.StatusBadRequest)
 		return
 	}
 
 	if rec.Object != "page" {
-		fmt.Println("Object is not page, undefined behaviour. Got", rec.Object)
+		log.WithField("object", rec.Object).Error("object is not page, undefined behaviour")
+		respond.WithStatus(w, r, http.StatusUnprocessableEntity)
+		return
 	}
 
 	if m.verify {
 		if err := m.checkIntegrity(r); err != nil {
-			fmt.Println("could not verify request:", err)
-			fmt.Fprintln(w, `{status: 'not ok'}`)
+			log.WithError(err).Error("could not verify request")
+			respond.WithStatus(w, r, http.StatusUnauthorized)
 			return
 		}
 	}
 
 	m.dispatch(rec)
 
-	fmt.Fprintln(w, `{status: 'ok'}`)
+	respond.WithStatus(w, r, http.StatusAccepted)
 }
 
 // checkIntegrity checks the integrity of the requests received
@@ -343,7 +361,7 @@ func (m *Messenger) dispatch(r Receive) {
 		for _, info := range entry.Messaging {
 			a := m.classify(info)
 			if a == UnknownAction {
-				fmt.Println("Unknown action:", info)
+				log.WithField("action", info).Warn("unknown action")
 				continue
 			}
 
