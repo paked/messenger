@@ -305,12 +305,7 @@ func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 
 func respond(w http.ResponseWriter, code int) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	if code < 400 {
-		fmt.Fprintln(w, `{"status": "ok"}`)
-	} else {
-		fmt.Fprintln(w, `{"status": "not ok"}`)
-	}
+	fmt.Fprintf(w, `{"code": %d, "status": "%s"}`, code, http.StatusText(code))
 }
 
 // checkIntegrity checks the integrity of the requests received
