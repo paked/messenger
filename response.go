@@ -205,7 +205,7 @@ func (r *Response) AttachmentData(dataType AttachmentType, filename string, file
 		return err
 	}
 	contentType := http.DetectContentType(filedataBytes[:512])
-	fmt.Println("Content-type detected:", contentType)
+	log.WithField("contentType", contentType).Debug("Content-Type detected")
 
 	var body bytes.Buffer
 	multipartWriter := multipart.NewWriter(&body)

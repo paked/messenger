@@ -8,8 +8,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -24,6 +27,9 @@ const (
 	// https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/
 	MessengerProfileURL = "https://graph.facebook.com/v2.6/me/messenger_profile"
 )
+
+// Logger singleton for easier use, mostly in Response
+var log logrus.FieldLogger
 
 // Options are the settings used when creating a Messenger client.
 type Options struct {
@@ -42,6 +48,8 @@ type Options struct {
 	WebhookURL string
 	// Mux is shared mux between several Messenger objects
 	Mux *http.ServeMux
+	// Logger provides configurable logging
+	Logger logrus.FieldLogger
 }
 
 // MessageHandler is a handler used for responding to a message containing text.
@@ -95,6 +103,16 @@ func New(mo Options) *Messenger {
 		appSecret: mo.AppSecret,
 	}
 
+	if mo.Logger != nil {
+		log = mo.Logger
+	} else {
+		// Some backward compatibility with fmt.Println
+		logger := logrus.New()
+		logger.SetFormatter(&printlnLikeFormatter{})
+		logger.SetOutput(os.Stdout)
+		log = logger
+	}
+
 	if mo.WebhookURL == "" {
 		mo.WebhookURL = "/"
 	}
@@ -103,6 +121,20 @@ func New(mo Options) *Messenger {
 	m.mux.HandleFunc(mo.WebhookURL, m.handle)
 
 	return m
+}
+
+type printlnLikeFormatter struct{}
+
+func (printlnLikeFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	var buf bytes.Buffer
+	buf.WriteString(entry.Message)
+	if len(entry.Data) > 0 {
+		buf.WriteString(": ")
+	}
+	for k, v := range entry.Data {
+		fmt.Fprintf(&buf, "%s=%v ", k, v)
+	}
+	return bytes.TrimSpace(buf.Bytes()), nil
 }
 
 // HandleMessage adds a new MessageHandler to the Messenger which will be triggered
@@ -279,18 +311,18 @@ func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 
 	err := json.Unmarshal(body, &rec)
 	if err != nil {
-		fmt.Println("could not decode response:", err)
+		log.WithError(err).Error("failed to decode response")
 		fmt.Fprintln(w, `{status: 'not ok'}`)
 		return
 	}
 
 	if rec.Object != "page" {
-		fmt.Println("Object is not page, undefined behaviour. Got", rec.Object)
+		log.WithField("object", rec.Object).Error("object is not page, undefined behaviour")
 	}
 
 	if m.verify {
 		if err := m.checkIntegrity(r); err != nil {
-			fmt.Println("could not verify request:", err)
+			log.WithError(err).Error("could not verify request")
 			fmt.Fprintln(w, `{status: 'not ok'}`)
 			return
 		}
@@ -343,7 +375,7 @@ func (m *Messenger) dispatch(r Receive) {
 		for _, info := range entry.Messaging {
 			a := m.classify(info)
 			if a == UnknownAction {
-				fmt.Println("Unknown action:", info)
+				log.WithField("action", info).Warn("unknown action")
 				continue
 			}
 
