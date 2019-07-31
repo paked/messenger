@@ -194,11 +194,11 @@ func (m *Messenger) ProfileByID(id int64, profileFields []string) (Profile, erro
 		qr := QueryResponse{}
 		err = json.Unmarshal(content, &qr)
 		if qr.Error != nil {
-			return p, xerrors.Errorf("facebook error: %w", qr.Error)
+			err = xerrors.Errorf("facebook error: %w", qr.Error)
 		}
 	}
 
-	return p, nil
+	return p, err
 }
 
 // GreetingSetting sends settings for greeting
