@@ -280,25 +280,32 @@ func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal(body, &rec)
 	if err != nil {
 		fmt.Println("could not decode response:", err)
-		fmt.Fprintln(w, `{status: 'not ok'}`)
+		respond(w, http.StatusBadRequest)
 		return
 	}
 
 	if rec.Object != "page" {
 		fmt.Println("Object is not page, undefined behaviour. Got", rec.Object)
+		respond(w, http.StatusUnprocessableEntity)
+		return
 	}
 
 	if m.verify {
 		if err := m.checkIntegrity(r); err != nil {
 			fmt.Println("could not verify request:", err)
-			fmt.Fprintln(w, `{status: 'not ok'}`)
+			respond(w, http.StatusUnauthorized)
 			return
 		}
 	}
 
 	m.dispatch(rec)
 
-	fmt.Fprintln(w, `{status: 'ok'}`)
+	respond(w, http.StatusAccepted) // We do not return any meaningful response immediately so it should be 202
+}
+
+func respond(w http.ResponseWriter, code int) {
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"code": %d, "status": "%s"}`, code, http.StatusText(code))
 }
 
 // checkIntegrity checks the integrity of the requests received
