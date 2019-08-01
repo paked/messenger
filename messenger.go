@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"golang.org/x/xerrors"
 )
 
 const (
@@ -192,7 +194,7 @@ func (m *Messenger) ProfileByID(id int64, profileFields []string) (Profile, erro
 		qr := QueryResponse{}
 		err = json.Unmarshal(content, &qr)
 		if qr.Error != nil {
-			err = fmt.Errorf("facebook error: %s", qr.Error.Message)
+			err = xerrors.Errorf("facebook error: %w", qr.Error)
 		}
 	}
 
@@ -279,6 +281,8 @@ func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 
 	err := json.Unmarshal(body, &rec)
 	if err != nil {
+		err = xerrors.Errorf("could not decode response: %w", err)
+		fmt.Println(err)
 		fmt.Println("could not decode response:", err)
 		respond(w, http.StatusBadRequest)
 		return
@@ -311,22 +315,22 @@ func respond(w http.ResponseWriter, code int) {
 // checkIntegrity checks the integrity of the requests received
 func (m *Messenger) checkIntegrity(r *http.Request) error {
 	if m.appSecret == "" {
-		return fmt.Errorf("missing app secret")
+		return xerrors.New("missing app secret")
 	}
 
 	sigHeader := "X-Hub-Signature"
 	sig := strings.SplitN(r.Header.Get(sigHeader), "=", 2)
 	if len(sig) == 1 {
 		if sig[0] == "" {
-			return fmt.Errorf("missing %s header", sigHeader)
+			return xerrors.Errorf("missing %s header", sigHeader)
 		}
-		return fmt.Errorf("malformed %s header: %v", sigHeader, strings.Join(sig, "="))
+		return xerrors.Errorf("malformed %s header: %v", sigHeader, strings.Join(sig, "="))
 	}
 
 	checkSHA1 := func(body []byte, hash string) error {
 		mac := hmac.New(sha1.New, []byte(m.appSecret))
 		if mac.Write(body); fmt.Sprintf("%x", mac.Sum(nil)) != hash {
-			return fmt.Errorf("invalid signature: %s", hash)
+			return xerrors.Errorf("invalid signature: %s", hash)
 		}
 		return nil
 	}
@@ -340,7 +344,7 @@ func (m *Messenger) checkIntegrity(r *http.Request) error {
 	case "sha1":
 		return checkSHA1(body, sigHash)
 	default:
-		return fmt.Errorf("unknown %s header encoding, expected sha1: %s", sigHeader, sig[0])
+		return xerrors.Errorf("unknown %s header encoding, expected sha1: %s", sigHeader, sig[0])
 	}
 }
 

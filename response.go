@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"net/textproto"
 	"strings"
+
+	"golang.org/x/xerrors"
 )
 
 // AttachmentType is attachment type.
@@ -72,17 +74,21 @@ type QueryError struct {
 	FBTraceID string `json:"fbtrace_id"`
 }
 
+// QueryError implements error
+func (e QueryError) Error() string {
+	return e.Message
+}
+
 func checkFacebookError(r io.Reader) error {
 	var err error
 
 	qr := QueryResponse{}
 	err = json.NewDecoder(r).Decode(&qr)
 	if err != nil {
-		return fmt.Errorf("json unmarshal error: %s", err)
+		return xerrors.Errorf("json unmarshal error: %w", err)
 	}
 	if qr.Error != nil {
-		err = fmt.Errorf("facebook error: %s", qr.Error.Message)
-		return err
+		return xerrors.Errorf("facebook error: %w", qr.Error)
 	}
 
 	return nil
