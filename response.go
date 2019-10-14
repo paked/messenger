@@ -68,10 +68,11 @@ type QueryResponse struct {
 
 // QueryError is representing an error sent back by Facebook
 type QueryError struct {
-	Message   string `json:"message"`
-	Type      string `json:"type"`
-	Code      int    `json:"code"`
-	FBTraceID string `json:"fbtrace_id"`
+	Message      string `json:"message"`
+	Type         string `json:"type"`
+	Code         int    `json:"code"`
+	ErrorSubcode int    `json:"error_subcode"`
+	FBTraceID    string `json:"fbtrace_id"`
 }
 
 // QueryError implements error
