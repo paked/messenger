@@ -96,8 +96,9 @@ func checkFacebookError(r io.Reader) error {
 
 // Response is used for responding to events with messages.
 type Response struct {
-	token string
-	to    Recipient
+	client *http.Client
+	token  string
+	to     Recipient
 }
 
 // SetToken is for using DispatchMessage from outside.
@@ -348,7 +349,11 @@ func (r *Response) DispatchMessage(m interface{}) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = "access_token=" + r.token
 
-	resp, err := http.DefaultClient.Do(req)
+	client := r.client
+	if client == nil {
+		client = http.DefaultClient
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -381,7 +386,11 @@ func (r *Response) PassThreadToInbox() error {
 	req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = "access_token=" + r.token
 
-	resp, err := http.DefaultClient.Do(req)
+	client := r.client
+	if client == nil {
+		client = http.DefaultClient
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
