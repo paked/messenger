@@ -17,14 +17,14 @@ import (
 const (
 	// ProfileURL is the API endpoint used for retrieving profiles.
 	// Used in the form: https://graph.facebook.com/v2.6/<USER_ID>?fields=<PROFILE_FIELDS>&access_token=<PAGE_ACCESS_TOKEN>
-	ProfileURL = "https://graph.facebook.com/v2.6/"
+	ProfileURL = "https://graph.facebook.com/v11.0/"
 	// SendSettingsURL is API endpoint for saving settings.
-	SendSettingsURL = "https://graph.facebook.com/v2.6/me/thread_settings"
+	SendSettingsURL = "https://graph.facebook.com/v11.0/me/thread_settings"
 
 	// MessengerProfileURL is the API endpoint where you set properties that define various aspects of the following Messenger Platform features.
 	// Used in the form https://graph.facebook.com/v2.6/me/messenger_profile?access_token=<PAGE_ACCESS_TOKEN>
 	// https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/
-	MessengerProfileURL = "https://graph.facebook.com/v2.6/me/messenger_profile"
+	MessengerProfileURL = "https://graph.facebook.com/v11.0/me/messenger_profile"
 )
 
 // Options are the settings used when creating a Messenger client.
