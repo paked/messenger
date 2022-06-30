@@ -25,9 +25,9 @@ type SenderAction string
 
 const (
 	// SendMessageURL is API endpoint for sending messages.
-	SendMessageURL = "https://graph.facebook.com/v2.11/me/messages"
+	SendMessageURL = "https://graph.facebook.com/v11.0/me/messages"
 	// ThreadControlURL is the API endpoint for passing thread control.
-	ThreadControlURL = "https://graph.facebook.com/v2.6/me/pass_thread_control"
+	ThreadControlURL = "https://graph.facebook.com/v11.0/me/pass_thread_control"
 	// InboxPageID is managed by facebook for secondary pass to inbox features: https://developers.facebook.com/docs/messenger-platform/handover-protocol/pass-thread-control
 	InboxPageID = 263902037430900
 
