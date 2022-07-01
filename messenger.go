@@ -17,7 +17,7 @@ import (
 const (
 	// ProfileURL is the API endpoint used for retrieving profiles.
 	// Used in the form: https://graph.facebook.com/v2.6/<USER_ID>?fields=<PROFILE_FIELDS>&access_token=<PAGE_ACCESS_TOKEN>
-	ProfileURL = "https://graph.facebook.com/v11.0/"
+	ProfileURL = "https://graph.facebook.com/v14.0/"
 	// SendSettingsURL is API endpoint for saving settings.
 	SendSettingsURL = "https://graph.facebook.com/v11.0/me/thread_settings"
 
