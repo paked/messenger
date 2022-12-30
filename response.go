@@ -50,11 +50,11 @@ const (
 	// NonPromotionalSubscriptionType is NON_PROMOTIONAL_SUBSCRIPTION messaging type
 	NonPromotionalSubscriptionType MessagingType = "NON_PROMOTIONAL_SUBSCRIPTION"
 
-	// NotificationNoPushType is NO_PUSH notification type
+	// NotificationNoPushType is NO_PUSH notification type. No notification
 	NotificationNoPushType NotificationType = "NO_PUSH"
-	// NotificationRegularType is REGULAR notification type (default)
+	// NotificationRegularType is REGULAR notification type (default). Sound or vibration when a message is received by a person
 	NotificationRegularType NotificationType = "REGULAR"
-	// NotificationSilentPushType is SILENT_PUSH notification type
+	// NotificationSilentPushType is SILENT_PUSH notification type. On-screen notification only
 	NotificationSilentPushType NotificationType = "SILENT_PUSH"
 
 	// TopElementStyle is compact.
