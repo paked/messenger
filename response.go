@@ -19,6 +19,7 @@ import (
 // AttachmentType is attachment type.
 type AttachmentType string
 type MessagingType string
+type NotificationType string
 type TopElementStyle string
 type ImageAspectRatio string
 type SenderAction string
@@ -48,6 +49,13 @@ const (
 	MessageTagType MessagingType = "MESSAGE_TAG"
 	// NonPromotionalSubscriptionType is NON_PROMOTIONAL_SUBSCRIPTION messaging type
 	NonPromotionalSubscriptionType MessagingType = "NON_PROMOTIONAL_SUBSCRIPTION"
+
+	// NotificationNoPushType is NO_PUSH notification type
+	NotificationNoPushType NotificationType = "NO_PUSH"
+	// NotificationRegularType is REGULAR notification type (default)
+	NotificationRegularType NotificationType = "REGULAR"
+	// NotificationSilentPushType is SILENT_PUSH notification type
+	NotificationSilentPushType NotificationType = "SILENT_PUSH"
 
 	// TopElementStyle is compact.
 	CompactTopElementStyle TopElementStyle = "compact"
@@ -112,14 +120,15 @@ func (r *Response) SetToken(token string) {
 }
 
 // Text sends a textual message.
-func (r *Response) Text(message string, messagingType MessagingType, tags ...string) error {
-	return r.TextWithReplies(message, nil, messagingType, tags...)
+func (r *Response) Text(message string, messagingType MessagingType, notificationType NotificationType, tags ...string) error {
+	return r.TextWithReplies(message, nil, messagingType, notificationType, tags...)
 }
 
 // TextWithReplies sends a textual message with some replies
 // messagingType should be one of the following: "RESPONSE","UPDATE","MESSAGE_TAG","NON_PROMOTIONAL_SUBSCRIPTION"
+// notificationType should be one of the following: "NO_PUSH","REGULAR" (default),"SILENT_PUSH"
 // only supply tags when messagingType == "MESSAGE_TAG" (see https://developers.facebook.com/docs/messenger-platform/send-messages#messaging_types for more)
-func (r *Response) TextWithReplies(message string, replies []QuickReply, messagingType MessagingType, tags ...string) error {
+func (r *Response) TextWithReplies(message string, replies []QuickReply, messagingType MessagingType, notificationType NotificationType, tags ...string) error {
 	var tag string
 	if len(tags) > 0 {
 		tag = tags[0]
@@ -133,13 +142,14 @@ func (r *Response) TextWithReplies(message string, replies []QuickReply, messagi
 			Attachment:   nil,
 			QuickReplies: replies,
 		},
-		Tag: tag,
+		Tag:              tag,
+		NotificationType: notificationType,
 	}
 	return r.DispatchMessage(&m)
 }
 
 // AttachmentWithReplies sends a attachment message with some replies
-func (r *Response) AttachmentWithReplies(attachment *StructuredMessageAttachment, replies []QuickReply, messagingType MessagingType, tags ...string) error {
+func (r *Response) AttachmentWithReplies(attachment *StructuredMessageAttachment, replies []QuickReply, messagingType MessagingType, notificationType NotificationType, tags ...string) error {
 	var tag string
 	if len(tags) > 0 {
 		tag = tags[0]
@@ -152,7 +162,8 @@ func (r *Response) AttachmentWithReplies(attachment *StructuredMessageAttachment
 			Attachment:   attachment,
 			QuickReplies: replies,
 		},
-		Tag: tag,
+		Tag:              tag,
+		NotificationType: notificationType,
 	}
 	return r.DispatchMessage(&m)
 }
@@ -399,10 +410,11 @@ func (r *Response) PassThreadToInbox() error {
 
 // SendMessage is the information sent in an API request to Facebook.
 type SendMessage struct {
-	MessagingType MessagingType `json:"messaging_type"`
-	Recipient     Recipient     `json:"recipient"`
-	Message       MessageData   `json:"message"`
-	Tag           string        `json:"tag,omitempty"`
+	MessagingType    MessagingType    `json:"messaging_type"`
+	Recipient        Recipient        `json:"recipient"`
+	Message          MessageData      `json:"message"`
+	Tag              string           `json:"tag,omitempty"`
+	NotificationType NotificationType `json:"notification_type,omitempty"`
 }
 
 // MessageData is a message consisting of text or an attachment, with an additional selection of optional quick replies.
