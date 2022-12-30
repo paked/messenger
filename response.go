@@ -23,6 +23,7 @@ type NotificationType string
 type TopElementStyle string
 type ImageAspectRatio string
 type SenderAction string
+type TagType string
 
 const (
 	// SendMessageURL is API endpoint for sending messages.
@@ -70,6 +71,17 @@ const (
 	SenderActionMarkSeen  SenderAction = "mark_seen"
 	SenderActionTypingOn  SenderAction = "typing_on"
 	SenderActionTypingOff SenderAction = "typing_off"
+
+	// TagAccountUpdateType Tags the message you are sending to your customer as a non-recurring update to their application or account. Not available for Instagram Messaging API
+	TagAccountUpdateType TagType = "ACCOUNT_UPDATE"
+	// TagConfirmedEventUpdateType Tags the message you are sending to your customer as a reminder fo an upcoming event or an update for an event in procgres for which the customer is registered. Not available for Instagram Messaging API
+	TagConfirmedEventUpdateType TagType = "CONFIRMED_EVENT_UPDATE"
+	// TagCustomerFeedbackType Tags the message you are sending to your customer as a Customer Feedback Survey. Customer feedback messages must be sent within 7 days of the customer's last message. Not available for Instagram Messaging API
+	TagCustomerFeedbackType TagType = "CUSTOMER_FEEDBACK"
+	// TagHumanAgentType When this tag is added to a message to a customer, it allows a human agent to respond to a person's message. Messages can be sent within 7 days of the person's. Human agent support is for issues that cannot be resolved within the standard 24 hour messaging window
+	TagHumanAgentType TagType = "HUMAN_AGENT"
+	// TagPostPurchaseUpdateType Tags the message you are sending to your customer as an update for a recent purchase made by the customer. Not available for Instagram Messaging API.
+	TagPostPurchaseUpdateType TagType = "POST_PURCHASE_UPDATE"
 )
 
 // QueryResponse is the response sent back by Facebook when setting up things
@@ -120,7 +132,7 @@ func (r *Response) SetToken(token string) {
 }
 
 // Text sends a textual message.
-func (r *Response) Text(message string, messagingType MessagingType, notificationType NotificationType, tags ...string) error {
+func (r *Response) Text(message string, messagingType MessagingType, notificationType NotificationType, tags ...TagType) error {
 	return r.TextWithReplies(message, nil, messagingType, notificationType, tags...)
 }
 
@@ -128,8 +140,8 @@ func (r *Response) Text(message string, messagingType MessagingType, notificatio
 // messagingType should be one of the following: "RESPONSE","UPDATE","MESSAGE_TAG","NON_PROMOTIONAL_SUBSCRIPTION"
 // notificationType should be one of the following: "NO_PUSH","REGULAR" (default),"SILENT_PUSH"
 // only supply tags when messagingType == "MESSAGE_TAG" (see https://developers.facebook.com/docs/messenger-platform/send-messages#messaging_types for more)
-func (r *Response) TextWithReplies(message string, replies []QuickReply, messagingType MessagingType, notificationType NotificationType, tags ...string) error {
-	var tag string
+func (r *Response) TextWithReplies(message string, replies []QuickReply, messagingType MessagingType, notificationType NotificationType, tags ...TagType) error {
+	var tag TagType
 	if len(tags) > 0 {
 		tag = tags[0]
 	}
@@ -149,8 +161,8 @@ func (r *Response) TextWithReplies(message string, replies []QuickReply, messagi
 }
 
 // AttachmentWithReplies sends a attachment message with some replies
-func (r *Response) AttachmentWithReplies(attachment *StructuredMessageAttachment, replies []QuickReply, messagingType MessagingType, notificationType NotificationType, tags ...string) error {
-	var tag string
+func (r *Response) AttachmentWithReplies(attachment *StructuredMessageAttachment, replies []QuickReply, messagingType MessagingType, notificationType NotificationType, tags ...TagType) error {
+	var tag TagType
 	if len(tags) > 0 {
 		tag = tags[0]
 	}
@@ -413,7 +425,7 @@ type SendMessage struct {
 	MessagingType    MessagingType    `json:"messaging_type"`
 	Recipient        Recipient        `json:"recipient"`
 	Message          MessageData      `json:"message"`
-	Tag              string           `json:"tag,omitempty"`
+	Tag              TagType          `json:"tag,omitempty"`
 	NotificationType NotificationType `json:"notification_type,omitempty"`
 }
 
