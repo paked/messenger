@@ -17,14 +17,14 @@ import (
 const (
 	// ProfileURL is the API endpoint used for retrieving profiles.
 	// Used in the form: https://graph.facebook.com/v2.6/<USER_ID>?fields=<PROFILE_FIELDS>&access_token=<PAGE_ACCESS_TOKEN>
-	ProfileURL = "https://graph.facebook.com/v2.6/"
+	ProfileURL = "https://graph.facebook.com/v14.0/"
 	// SendSettingsURL is API endpoint for saving settings.
-	SendSettingsURL = "https://graph.facebook.com/v2.6/me/thread_settings"
+	SendSettingsURL = "https://graph.facebook.com/v11.0/me/thread_settings"
 
 	// MessengerProfileURL is the API endpoint where you set properties that define various aspects of the following Messenger Platform features.
 	// Used in the form https://graph.facebook.com/v2.6/me/messenger_profile?access_token=<PAGE_ACCESS_TOKEN>
 	// https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/
-	MessengerProfileURL = "https://graph.facebook.com/v2.6/me/messenger_profile"
+	MessengerProfileURL = "https://graph.facebook.com/v11.0/me/messenger_profile"
 )
 
 // Options are the settings used when creating a Messenger client.
@@ -288,8 +288,8 @@ func (m *Messenger) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if rec.Object != "page" {
-		fmt.Println("Object is not page, undefined behaviour. Got", rec.Object)
+	if rec.Object != "page" && rec.Object != "instagram" {
+		fmt.Println("Object is not page or instagram, undefined behaviour. Got", rec.Object)
 		respond(w, http.StatusUnprocessableEntity)
 		return
 	}
@@ -426,7 +426,7 @@ func (m *Messenger) Response(to int64) *Response {
 }
 
 // Send will send a textual message to a user. This user must have previously initiated a conversation with the bot.
-func (m *Messenger) Send(to Recipient, message string, messagingType MessagingType, tags ...string) error {
+func (m *Messenger) Send(to Recipient, message string, messagingType MessagingType, tags ...TagType) error {
 	return m.SendWithReplies(to, message, nil, messagingType, tags...)
 }
 
@@ -440,13 +440,13 @@ func (m *Messenger) SendGeneralMessage(to Recipient, elements *[]StructuredMessa
 }
 
 // SendWithReplies sends a textual message to a user, but gives them the option of numerous quick response options.
-func (m *Messenger) SendWithReplies(to Recipient, message string, replies []QuickReply, messagingType MessagingType, tags ...string) error {
+func (m *Messenger) SendWithReplies(to Recipient, message string, replies []QuickReply, messagingType MessagingType, tags ...TagType) error {
 	response := &Response{
 		token: m.token,
 		to:    to,
 	}
 
-	return response.TextWithReplies(message, replies, messagingType, tags...)
+	return response.TextWithReplies(message, replies, messagingType, NotificationRegularType, tags...)
 }
 
 // Attachment sends an image, sound, video or a regular file to a given recipient.
