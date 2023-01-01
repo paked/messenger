@@ -1,3 +1,5 @@
+**[See github.com/sSimuSs/messenger for an up-to-date fork of this repo.](https://github.com/sSimuSs/messenger)**
+
 # Messenger [![GoDoc](https://godoc.org/github.com/paked/messenger?status.svg)](https://godoc.org/github.com/paked/messenger) [![Build Status](https://travis-ci.org/paked/messenger.svg?branch=master)](https://travis-ci.org/paked/messenger)
 
 This is a Go library for making bots to be used on Facebook messenger. It is built on the [Messenger Platform](https://developers.facebook.com/docs/messenger-platform). One of the main goals of the project is to implement it in an idiomatic and easy to use fashion.
