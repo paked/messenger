@@ -44,6 +44,8 @@ type Options struct {
 	WebhookURL string
 	// Mux is shared mux between several Messenger objects
 	Mux *http.ServeMux
+	// Client is custom http.Client used for API requests. Leaving nil uses http.DefaultClient.
+	Client *http.Client
 }
 
 // MessageHandler is a handler used for responding to a message containing text.
@@ -71,6 +73,7 @@ type AccountLinkingHandler func(AccountLinking, *Response)
 // Messenger is the client which manages communication with the Messenger Platform API.
 type Messenger struct {
 	mux                    *http.ServeMux
+	client                 *http.Client
 	messageHandlers        []MessageHandler
 	deliveryHandlers       []DeliveryHandler
 	readHandlers           []ReadHandler
@@ -90,8 +93,13 @@ func New(mo Options) *Messenger {
 		mo.Mux = http.NewServeMux()
 	}
 
+	if mo.Client == nil {
+		mo.Client = http.DefaultClient
+	}
+
 	m := &Messenger{
 		mux:       mo.Mux,
+		client:    mo.Client,
 		token:     mo.Token,
 		verify:    mo.Verify,
 		appSecret: mo.AppSecret,
@@ -173,8 +181,7 @@ func (m *Messenger) ProfileByID(id int64, profileFields []string) (Profile, erro
 
 	req.URL.RawQuery = "fields=" + fields + "&access_token=" + m.token
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := m.client.Do(req)
 	if err != nil {
 		return p, err
 	}
@@ -359,8 +366,9 @@ func (m *Messenger) dispatch(r Receive) {
 			}
 
 			resp := &Response{
-				to:    Recipient{info.Sender.ID},
-				token: m.token,
+				client: m.client,
+				token:  m.token,
+				to:     Recipient{info.Sender.ID},
 			}
 
 			switch a {
@@ -420,8 +428,9 @@ func (m *Messenger) dispatch(r Receive) {
 // Response returns new Response object
 func (m *Messenger) Response(to int64) *Response {
 	return &Response{
-		to:    Recipient{to},
-		token: m.token,
+		client: m.client,
+		token:  m.token,
+		to:     Recipient{to},
 	}
 }
 
@@ -433,8 +442,9 @@ func (m *Messenger) Send(to Recipient, message string, messagingType MessagingTy
 // SendGeneralMessage will send the GenericTemplate message
 func (m *Messenger) SendGeneralMessage(to Recipient, elements *[]StructuredMessageElement, messagingType MessagingType, tags ...string) error {
 	r := &Response{
-		token: m.token,
-		to:    to,
+		client: m.client,
+		token:  m.token,
+		to:     to,
 	}
 	return r.GenericTemplate(elements, messagingType, tags...)
 }
@@ -442,8 +452,9 @@ func (m *Messenger) SendGeneralMessage(to Recipient, elements *[]StructuredMessa
 // SendWithReplies sends a textual message to a user, but gives them the option of numerous quick response options.
 func (m *Messenger) SendWithReplies(to Recipient, message string, replies []QuickReply, messagingType MessagingType, tags ...string) error {
 	response := &Response{
-		token: m.token,
-		to:    to,
+		client: m.client,
+		token:  m.token,
+		to:     to,
 	}
 
 	return response.TextWithReplies(message, replies, messagingType, tags...)
@@ -452,8 +463,9 @@ func (m *Messenger) SendWithReplies(to Recipient, message string, replies []Quic
 // Attachment sends an image, sound, video or a regular file to a given recipient.
 func (m *Messenger) Attachment(to Recipient, dataType AttachmentType, url string, messagingType MessagingType, tags ...string) error {
 	response := &Response{
-		token: m.token,
-		to:    to,
+		client: m.client,
+		token:  m.token,
+		to:     to,
 	}
 
 	return response.Attachment(dataType, url, messagingType, tags...)
