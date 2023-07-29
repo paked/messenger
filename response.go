@@ -21,6 +21,7 @@ type AttachmentType string
 type MessagingType string
 type TopElementStyle string
 type ImageAspectRatio string
+type SenderAction string
 
 const (
 	// SendMessageURL is API endpoint for sending messages.
@@ -57,6 +58,10 @@ const (
 	HorizontalImageAspectRatio ImageAspectRatio = "horizontal"
 	// ImageAspectRatio is square.
 	SquareImageAspectRatio ImageAspectRatio = "square"
+
+	SenderActionMarkSeen  SenderAction = "mark_seen"
+	SenderActionTypingOn  SenderAction = "typing_on"
+	SenderActionTypingOff SenderAction = "typing_off"
 )
 
 // QueryResponse is the response sent back by Facebook when setting up things
@@ -327,7 +332,7 @@ func (r *Response) ListTemplate(elements *[]StructuredMessageElement, messagingT
 }
 
 // SenderAction sends a info about sender action
-func (r *Response) SenderAction(action string) error {
+func (r *Response) SenderAction(action SenderAction) error {
 	m := SendSenderAction{
 		Recipient:    r.to,
 		SenderAction: action,
@@ -479,6 +484,6 @@ type StructuredMessageButton struct {
 
 // SendSenderAction is the information about sender action
 type SendSenderAction struct {
-	Recipient    Recipient `json:"recipient"`
-	SenderAction string    `json:"sender_action"`
+	Recipient    Recipient    `json:"recipient"`
+	SenderAction SenderAction `json:"sender_action"`
 }
